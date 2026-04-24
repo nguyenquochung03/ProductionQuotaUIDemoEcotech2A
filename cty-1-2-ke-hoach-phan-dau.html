@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<title>Khoán sản lượng | 1.2 Lên kế hoạch phấn đấu</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="../hud_admin_v2.3/template_html/dist/assets/css/vendor.min.css" rel="stylesheet">
+	<link href="../hud_admin_v2.3/template_html/dist/assets/css/app.min.css" rel="stylesheet">
+	<link href="_app.css" rel="stylesheet">
+</head>
+<body>
+	<div id="app" class="app">
+		<div id="content" class="app-content">
+
+			<div class="ksl-page-header">
+				<div class="page-icon"><i class="bi bi-graph-up-arrow"></i></div>
+				<div>
+					<h1>Lên kế hoạch phấn đấu</h1>
+					<div class="subtitle">Cấp Công ty · Phần sản lượng vượt chỉ tiêu — không chia đều, chỉ gán cho lô có tiềm năng theo đề xuất của Đội</div>
+				</div>
+			</div>
+
+			<!-- LIST -->
+			<div class="card mb-3">
+				<div class="card-body">
+					<div class="d-flex align-items-center mb-3">
+						<h5 class="fw-bold mb-0 flex-1"><i class="bi bi-collection me-2 text-theme"></i>Danh sách kế hoạch phấn đấu theo năm</h5>
+						<button class="btn btn-outline-theme btn-sm" id="btn-create-next">
+							<i class="bi bi-plus-lg me-1"></i>Lên phấn đấu cho năm <span id="next-year-label"></span>
+						</button>
+					</div>
+					<div class="table-responsive">
+						<table class="table table-hover table-ksl align-middle mb-0">
+							<thead>
+								<tr>
+									<th style="width:12%">Năm</th>
+									<th>Tổng khoán phấn đấu</th>
+									<th>Số lô nhận phấn đấu</th>
+									<th>Ngày chốt</th>
+									<th style="width:12%">Trạng thái</th>
+									<th style="width:140px"></th>
+								</tr>
+							</thead>
+							<tbody id="strive-list-tbody"></tbody>
+						</table>
+					</div>
+				</div>
+				<div class="card-arrow">
+					<div class="card-arrow-top-left"></div><div class="card-arrow-top-right"></div>
+					<div class="card-arrow-bottom-left"></div><div class="card-arrow-bottom-right"></div>
+				</div>
+			</div>
+
+			<!-- DETAIL -->
+			<div class="card mb-3" id="detail-card" style="display:none;">
+				<div class="card-body">
+					<div class="d-flex flex-wrap align-items-start mb-3">
+						<div class="flex-1">
+							<div class="small text-inverse text-opacity-50 mb-1">CHI TIẾT KẾ HOẠCH PHẤN ĐẤU</div>
+							<div class="d-flex align-items-center gap-3 flex-wrap">
+								<h3 class="fw-bold mb-0" id="detail-year-title">—</h3>
+								<span id="detail-status-badge"></span>
+							</div>
+						</div>
+						<div id="detail-actions" class="d-flex gap-2"></div>
+					</div>
+
+					<div id="blocked-notice" class="ksl-note warn" style="display:none;">
+						<strong><i class="bi bi-exclamation-triangle me-1"></i>Không thể tạo phấn đấu cho năm này.</strong>
+						Cần <u>chốt kế hoạch khoán</u> năm tương ứng trước (tab <em>1.1 Lên kế hoạch khoán</em>).
+					</div>
+
+					<div id="detail-body">
+						<!-- KPIs -->
+						<div class="row g-2 mb-3">
+							<div class="col-md-3 col-6">
+								<div class="ksl-kpi accent-theme">
+									<div class="lbl">Khoán năm đã chốt</div>
+									<div class="val" id="k-base-plan">—</div>
+									<div class="sub" id="k-base-plan-sub">—</div>
+								</div>
+							</div>
+							<div class="col-md-3 col-6">
+								<div class="ksl-kpi accent-info">
+									<div class="lbl">Phấn đấu thêm</div>
+									<div class="val" id="k-total">—</div>
+									<div class="sub" id="k-total-sub">—</div>
+								</div>
+							</div>
+							<div class="col-md-3 col-6">
+								<div class="ksl-kpi accent-theme">
+									<div class="lbl">Khoán sau phấn đấu</div>
+									<div class="val" id="k-combined">—</div>
+									<div class="sub" id="k-combined-sub">—</div>
+								</div>
+							</div>
+							<div class="col-md-3 col-6">
+								<div class="ksl-kpi">
+									<div class="lbl">Lô được gán phấn đấu</div>
+									<div class="val" id="k-lot-count">—</div>
+									<div class="sub" id="k-lot-sub">— / — lô toàn công ty</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="ksl-note info">
+							<strong>Quy tắc phấn đấu:</strong> Đội trưởng đề xuất → Phòng Kỹ thuật xem xét và chọn lô nhận, nhập kế hoạch phấn đấu. Lô không được chọn vẫn hiển thị trong bảng nhưng kế hoạch phấn đấu = 0.
+						</div>
+
+						<!-- Bộ lọc % đề xuất mặc định -->
+						<div class="d-flex align-items-center mb-2 flex-wrap gap-2">
+							<label class="form-label small mb-0 me-2">% phấn đấu toàn năm:</label>
+							<select class="form-select form-select-sm w-auto" id="sel-percent">
+								<option value="5">5%</option>
+								<option value="6">6%</option>
+								<option value="7">7%</option>
+								<option value="8" selected>8%</option>
+								<option value="10">10%</option>
+							</select>
+							<span class="small text-inverse text-opacity-60 ms-3">Đề xuất phân bổ đều cho tất cả lô tick chọn, rồi chỉnh thủ công từng lô nếu cần.</span>
+							<div class="ms-auto d-flex gap-2">
+								<button class="btn btn-sm btn-outline-inverse"><i class="bi bi-file-earmark-excel me-1"></i>Xuất Excel</button>
+								<button class="btn btn-sm btn-outline-inverse"><i class="bi bi-upload me-1"></i>Nhập từ Excel</button>
+							</div>
+						</div>
+
+						<!-- Bảng lô -->
+						<div class="table-responsive" style="max-height:560px;overflow:auto;">
+							<table class="table table-sm align-middle mb-0 table-ksl">
+								<thead class="sticky-top" style="background:var(--bs-component-bg);z-index:2;">
+									<tr>
+										<th style="width:36px;" class="text-center">
+											<input type="checkbox" id="chk-all" checked>
+										</th>
+										<th style="min-width:70px;">Đội</th>
+										<th style="min-width:70px;">Ga</th>
+										<th>Lô</th>
+										<th class="text-end">Năm trồng</th>
+										<th class="text-end">Kế hoạch khoán năm (kg)</th>
+										<th class="text-end">Năng suất trung bình 3 năm gần nhất (kg/cây)</th>
+										<th class="text-end" style="min-width:120px;">Kế hoạch phấn đấu (kg)</th>
+										<th class="text-end" style="min-width:150px;">Tổng khoán sau phấn đấu (kg)</th>
+									</tr>
+								</thead>
+								<tbody id="strive-tbody"></tbody>
+								<tfoot>
+									<tr class="total-row" style="background:rgba(var(--bs-theme-rgb),0.1);">
+										<td colspan="5" class="fw-bold">TỔNG PHẤN ĐẤU</td>
+										<td class="text-end fw-bold text-theme" id="f-khoan-total">—</td>
+										<td></td>
+										<td class="text-end fw-bold text-success" id="f-strive-total">—</td>
+										<td class="text-end fw-bold text-theme" id="f-combined-total">—</td>
+									</tr>
+								</tfoot>
+							</table>
+						</div>
+					</div>
+				</div>
+				<div class="card-arrow">
+					<div class="card-arrow-top-left"></div><div class="card-arrow-top-right"></div>
+					<div class="card-arrow-bottom-left"></div><div class="card-arrow-bottom-right"></div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	<script src="_data.js"></script>
+	<script src="_shell.js"></script>
+	<script>Shell.render({ activePageId: 'cty-1-2' });</script>
+
+	<script src="../hud_admin_v2.3/template_html/dist/assets/js/vendor.min.js"></script>
+	<script src="../hud_admin_v2.3/template_html/dist/assets/js/app.min.js"></script>
+
+	<script>
+	(function () {
+		const state = Shell.getState();
+		const company = KSL_DATA.getCompany(state.companyId);
+		const D = KSL_DATA;
+
+		document.getElementById('next-year-label').textContent = D.nextYear;
+
+		// List
+		const years = Object.keys(company.strivePlans).map(Number).sort((a,b)=>b-a);
+		document.getElementById('strive-list-tbody').innerHTML = years.map(y => {
+			const p = company.strivePlans[y];
+			const khoanPlan = company.plans[y];
+			let badge = '';
+			let actions = '';
+			if (p.status === 'locked') {
+				badge = '<span class="ksl-status locked"><i class="bi bi-lock-fill"></i>Đã chốt</span>';
+				actions = `<button class="btn btn-sm btn-outline-inverse" data-year="${y}"><i class="bi bi-eye me-1"></i>Xem</button>`;
+			} else if (p.status === 'draft') {
+				badge = '<span class="ksl-status draft"><i class="bi bi-pencil-fill"></i>Đang soạn</span>';
+				actions = `<button class="btn btn-sm btn-outline-theme me-1" data-year="${y}"><i class="bi bi-pencil me-1"></i>Sửa</button>
+				           <button class="btn btn-sm btn-warning" data-year="${y}"><i class="bi bi-lock me-1"></i>Chốt</button>`;
+			} else {
+				badge = '<span class="ksl-status none">Chưa tạo</span>';
+				actions = `<button class="btn btn-sm btn-outline-theme" data-year="${y}"><i class="bi bi-plus me-1"></i>Tạo</button>`;
+			}
+			const lotCount = p.status === 'locked' ? Math.round(KSL_DATA.flatLots(company).length * 0.75) : '—';
+			return `<tr data-year="${y}">
+				<td><strong class="fs-5">${y}</strong></td>
+				<td>${p.total ? `<span class="text-success fw-bold">${D.fmtKg(p.total)}</span> <span class="text-inverse text-opacity-50 small">(${D.fmtTon(p.total)})</span>` : '—'}</td>
+				<td>${lotCount}</td>
+				<td>${p.approvedAt || '—'}</td>
+				<td>${badge}</td>
+				<td class="text-end">${actions}</td>
+			</tr>`;
+		}).join('');
+
+		document.getElementById('strive-list-tbody').addEventListener('click', e => {
+			const btn = e.target.closest('button[data-year]');
+			if (btn) openDetail(parseInt(btn.dataset.year, 10));
+		});
+		document.getElementById('btn-create-next').addEventListener('click', () => openDetail(D.nextYear));
+
+		// Detail
+		function openDetail(year) {
+			const sp = company.strivePlans[year] || { status: 'draft' };
+			const kp = company.plans[year];
+			const isLocked = sp.status === 'locked';
+			const canCreate = kp && kp.status === 'locked';
+
+			document.getElementById('detail-year-title').textContent = `Kế hoạch phấn đấu năm ${year}`;
+			const sb = document.getElementById('detail-status-badge');
+			if (isLocked) sb.innerHTML = '<span class="ksl-status locked"><i class="bi bi-lock-fill"></i>Đã chốt</span>';
+			else if (sp.status === 'draft') sb.innerHTML = '<span class="ksl-status draft"><i class="bi bi-pencil-fill"></i>Đang soạn</span>';
+			else sb.innerHTML = '<span class="ksl-status none">Chưa tạo</span>';
+
+			const blocked = document.getElementById('blocked-notice');
+			const body = document.getElementById('detail-body');
+			document.getElementById('detail-card').style.display = '';
+
+			if (!canCreate && !isLocked) {
+				blocked.style.display = '';
+				body.style.display = 'none';
+				document.getElementById('detail-actions').innerHTML = `<button class="btn btn-outline-inverse btn-sm" onclick="document.getElementById('detail-card').style.display='none';"><i class="bi bi-x-lg me-1"></i>Đóng</button>`;
+				document.getElementById('detail-card').scrollIntoView({ behavior: 'smooth' });
+				return;
+			}
+			blocked.style.display = 'none';
+			body.style.display = '';
+
+			const lots = D.flatLots(company);
+			const totalKhoan = kp ? kp.total : 0;
+
+			const defaultPercent = sp.percent || 8;
+			document.getElementById('sel-percent').value = defaultPercent;
+
+			const actions = document.getElementById('detail-actions');
+			if (isLocked) {
+				actions.innerHTML = `<button class="btn btn-outline-inverse btn-sm" onclick="document.getElementById('detail-card').style.display='none';"><i class="bi bi-x-lg me-1"></i>Đóng</button>`;
+			} else {
+				actions.innerHTML = `
+					<button class="btn btn-outline-inverse btn-sm"><i class="bi bi-save me-1"></i>Lưu nháp</button>
+					<button class="btn btn-warning btn-sm"><i class="bi bi-lock-fill me-1"></i>Chốt phấn đấu</button>`;
+			}
+
+			// Build lot rows with auto-suggest
+			function evalLot(lot, i) {
+				const hist = D.mockLotHistory(lot.id);
+				const y3 = hist[2].yield;
+				const nsPerTree = y3 / lot.trees;
+				const age = year - lot.year;
+				let khoanLot = Math.round(totalKhoan * (lot.trees / lots.reduce((s,l)=>s+l.trees,0)));
+				// đánh giá tiềm năng đơn giản
+				let potential, potColor, proposal, accept;
+				if (age < 10) { potential = 'Cao'; potColor = 'success'; proposal = '6-8%'; accept = true; }
+				else if (age < 18) { potential = 'Khá'; potColor = 'theme'; proposal = '4-6%'; accept = true; }
+				else if (age < 23) { potential = 'Trung bình'; potColor = 'warning'; proposal = '2-3%'; accept = i % 3 !== 0; }
+				else { potential = 'Thấp'; potColor = 'danger'; proposal = 'Không đề xuất'; accept = false; }
+				return { lot, khoanLot, age, nsPerTree, potential, potColor, proposal, accept };
+			}
+
+			function render() {
+				const pct = parseFloat(document.getElementById('sel-percent').value);
+				const evals = lots.map((l, i) => evalLot(l, i));
+				let totalK = 0, totalS = 0;
+				const rows = evals.map((e, i) => {
+					const striveKg = e.accept ? Math.round(e.khoanLot * pct / 100) : 0;
+					totalK += e.khoanLot;
+					totalS += striveKg;
+					const readonly = isLocked ? 'readonly' : '';
+					const chk = e.accept ? 'checked' : '';
+					return `<tr>
+						<td class="text-center"><input type="checkbox" class="chk-lot" ${chk} ${isLocked ? 'disabled' : ''}></td>
+						<td class="small">${e.lot.teamName}</td>
+						<td class="small">${e.lot.stationName || '—'}</td>
+						<td><strong>${e.lot.name}</strong><div class="small text-inverse text-opacity-50">${e.lot.seedling}</div></td>
+						<td class="text-end">${e.lot.year}<div class="small text-inverse text-opacity-50">${e.age} năm</div></td>
+						<td class="text-end">${D.fmtNum(e.khoanLot)}</td>
+						<td class="text-end">${e.nsPerTree.toFixed(2)}</td>
+						<td class="text-end"><input type="text" class="ksl-inline-input fw-bold ${e.accept ? 'text-success' : 'text-inverse text-opacity-40'}" value="${D.fmtNum(striveKg)}" ${readonly}/></td>
+						<td class="text-end fw-bold text-theme">${D.fmtNum(e.khoanLot + striveKg)}</td>
+						</tr>`;
+				}).join('');
+				document.getElementById('strive-tbody').innerHTML = rows;
+				document.getElementById('f-khoan-total').textContent = D.fmtKg(totalK);
+				document.getElementById('f-strive-total').textContent = D.fmtKg(totalS);
+				document.getElementById('f-combined-total').textContent = D.fmtKg(totalK + totalS);
+	
+				// KPIs
+				const accepted = evals.filter(e => e.accept).length;
+				document.getElementById('k-base-plan').innerHTML = D.fmtNum(totalK) + '<span class="unit">kg</span>';
+				document.getElementById('k-base-plan-sub').textContent = D.fmtTon(totalK);
+				document.getElementById('k-total').innerHTML = D.fmtNum(totalS) + '<span class="unit">kg</span>';
+				document.getElementById('k-total-sub').textContent = D.fmtTon(totalS);
+				document.getElementById('k-combined').innerHTML = D.fmtNum(totalK + totalS) + '<span class="unit">kg</span>';
+				document.getElementById('k-combined-sub').textContent = D.fmtTon(totalK + totalS);
+				document.getElementById('k-lot-count').textContent = accepted;
+				document.getElementById('k-lot-sub').textContent = accepted + ' / ' + evals.length + ' lô toàn công ty';
+			}
+			render();
+			document.getElementById('sel-percent').onchange = render;
+
+			document.getElementById('detail-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+		}
+
+		// Auto open latest draft/next
+		if (company.strivePlans[D.nextYear]) openDetail(D.nextYear);
+		else if (years[0]) openDetail(years[0]);
+	})();
+	</script>
+</body>
+</html>

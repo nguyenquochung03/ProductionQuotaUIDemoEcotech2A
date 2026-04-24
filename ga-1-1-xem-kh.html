@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<title>Khoán sản lượng | Ga 1.1 Xem kế hoạch từ Đội</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="../hud_admin_v2.3/template_html/dist/assets/css/vendor.min.css" rel="stylesheet">
+	<link href="../hud_admin_v2.3/template_html/dist/assets/css/app.min.css" rel="stylesheet">
+	<link href="_app.css" rel="stylesheet">
+</head>
+<body>
+	<div id="app" class="app">
+		<div id="content" class="app-content">
+
+			<div class="ksl-page-header">
+				<div class="page-icon"><i class="bi bi-file-earmark-check"></i></div>
+				<div>
+					<h1>Xem kế hoạch được giao từ Đội</h1>
+					<div class="subtitle">Cấp Ga/Tổ · Read-only · Khoán năm + % 12 tháng + Phấn đấu + danh sách phần cây</div>
+				</div>
+			</div>
+
+			<div class="ksl-note info">
+				<i class="bi bi-info-circle me-1"></i><strong>Trưởng Ga chỉ xem</strong> — không sửa được. Để xem kế hoạch cấp Đội (cao hơn), cần chuyển vai trò thành Đội trưởng hoặc Admin hệ thống.
+			</div>
+
+			<!-- Ghi chú mô hình 2 -->
+			<div class="ksl-note warn" id="m2-note" style="display:none;">
+				<strong><i class="bi bi-exclamation-triangle me-1"></i>Công ty áp dụng mô hình 2</strong> — không có cấp Ga. Trang này chỉ có ý nghĩa với công ty sử dụng mô hình 1 (Tân Biên, Lộc Ninh).
+			</div>
+
+			<div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+				<div class="me-2">
+					<div class="small text-inverse text-opacity-50">GA/TỔ HIỆN TẠI</div>
+					<div class="fw-bold fs-5" id="sta-name">—</div>
+				</div>
+				<select class="form-select form-select-sm w-auto" id="sel-year"></select>
+			</div>
+
+			<!-- Hàng chỉ số tổng quan -->
+			<div class="row g-2 mb-3">
+				<div class="col-lg-3 col-md-6">
+					<div class="ksl-kpi accent-theme">
+						<div class="lbl">Kế hoạch năm Ga (gốc)</div>
+						<div class="val" id="k-base">—</div>
+						<div class="sub" id="k-base-sub">—</div>
+					</div>
+				</div>
+				<div class="col-lg-3 col-md-6">
+					<div class="ksl-kpi accent-info">
+						<div class="lbl">Bổ sung đã nhận</div>
+						<div class="val" id="k-supp">—</div>
+						<div class="sub" id="k-supp-sub">—</div>
+					</div>
+				</div>
+				<div class="col-lg-3 col-md-6">
+					<div class="ksl-kpi">
+						<div class="lbl">Phấn đấu</div>
+						<div class="val" id="k-strive">—</div>
+						<div class="sub" id="k-strive-sub">—</div>
+					</div>
+				</div>
+				<div class="col-lg-3 col-md-6">
+					<div class="ksl-kpi accent-theme">
+						<div class="lbl">Tổng chỉ tiêu (hiệu lực)</div>
+						<div class="val" id="k-eff">—</div>
+						<div class="sub" id="k-eff-sub">—</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- % 12 tháng -->
+			<div class="card mb-3">
+				<div class="card-body">
+					<h5 class="fw-bold mb-3"><i class="bi bi-calendar3 me-2 text-theme"></i>Phân bổ % 12 tháng</h5>
+					<div class="table-responsive">
+						<table class="ksl-monthly-grid w-100" id="tbl-monthly"></table>
+					</div>
+				</div>
+				<div class="card-arrow">
+					<div class="card-arrow-top-left"></div><div class="card-arrow-top-right"></div>
+					<div class="card-arrow-bottom-left"></div><div class="card-arrow-bottom-right"></div>
+				</div>
+			</div>
+
+			<!-- Danh sách phần cây -->
+			<div class="card mb-3">
+				<div class="card-body">
+					<h5 class="fw-bold mb-3"><i class="bi bi-tree me-2 text-theme"></i>Danh sách phần cây thuộc Ga</h5>
+					<div class="table-responsive">
+						<table class="table table-ksl align-middle mb-0">
+							<thead>
+								<tr>
+									<th>Lô</th>
+									<th>Phần cây</th>
+									<th>Công nhân phụ trách</th>
+									<th class="text-end">Số cây</th>
+									<th class="text-end">Kế hoạch khoán năm (kg)</th>
+									<th class="text-end">Phấn đấu (kg)</th>
+									<th class="text-end">Tổng chỉ tiêu (kg)</th>
+									<th>Trạng thái</th>
+								</tr>
+							</thead>
+							<tbody id="parts-tbody"></tbody>
+						</table>
+					</div>
+				</div>
+				<div class="card-arrow">
+					<div class="card-arrow-top-left"></div><div class="card-arrow-top-right"></div>
+					<div class="card-arrow-bottom-left"></div><div class="card-arrow-bottom-right"></div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	<script src="_data.js"></script>
+	<script src="_shell.js"></script>
+	<script>Shell.render({ activePageId: 'ga-1-1', scope: 'ga' });</script>
+
+	<script src="../hud_admin_v2.3/template_html/dist/assets/js/vendor.min.js"></script>
+	<script src="../hud_admin_v2.3/template_html/dist/assets/js/app.min.js"></script>
+
+	<script>
+	(function () {
+		const state = Shell.getState();
+		const company = KSL_DATA.getCompany(state.companyId);
+		const D = KSL_DATA;
+
+		if (company.model === '2') {
+			document.getElementById('m2-note').style.display = '';
+		}
+
+		// Tìm Ga
+		const stas = D.flatStations(company);
+		const sta = stas.find(s => s.id === state.stationId) || stas[0];
+		if (!sta) {
+			document.getElementById('content').innerHTML += '<div class="ksl-note warn">Không có Ga cho công ty này (áp dụng mô hình 2).</div>';
+			return;
+		}
+		document.getElementById('sta-name').textContent = sta.teamName + ' · ' + sta.name;
+
+		const years = Object.keys(company.plans).map(Number).sort((a,b)=>b-a);
+		const sel = document.getElementById('sel-year');
+		sel.innerHTML = years.map(y => `<option value="${y}" ${y === D.currentYear ? 'selected' : ''}>Năm ${y}</option>`).join('');
+		sel.addEventListener('change', render);
+
+		// Mock công nhân
+		const WORKERS = ['Nguyễn Văn A', 'Trần Thị B', 'Lê Văn C', 'Phạm Văn D', 'Hoàng Thị E', 'Võ Văn F', 'Đặng Thị G', 'Bùi Văn H', 'Đỗ Thị I', 'Ngô Văn K'];
+
+		function render() {
+			const year = parseInt(sel.value, 10);
+			const kp = company.plans[year];
+			// Share của Ga: theo tỷ lệ số cây trong công ty
+			const allStas = D.flatStations(company);
+			const totalTrees = allStas.reduce((s, x) => s + (x.lots || []).reduce((a,l) => a + l.trees, 0), 0);
+			const staTrees = (sta.lots || []).reduce((a, l) => a + l.trees, 0);
+			const staPlan = Math.round(kp.total * (staTrees / totalTrees));
+			const supp = (company.supplementary || []).filter(s => s.date.startsWith(String(year))).reduce((s, x) => s + x.kg, 0);
+			const staSupp = Math.round(supp * (staTrees / totalTrees));
+			const staStrive = company.strivePlans[year] ? Math.round(company.strivePlans[year].total * (staTrees / totalTrees)) : 0;
+			const eff = staPlan + staSupp;
+
+			document.getElementById('k-base').innerHTML = D.fmtNum(staPlan) + '<span class="unit">kg</span>';
+			document.getElementById('k-base-sub').textContent = D.fmtTon(staPlan);
+			document.getElementById('k-supp').innerHTML = D.fmtNum(staSupp) + '<span class="unit">kg</span>';
+			document.getElementById('k-supp-sub').textContent = staSupp ? `+${(staSupp/staPlan*100).toFixed(1)}% so với kế hoạch gốc` : '—';
+			document.getElementById('k-strive').innerHTML = D.fmtNum(staStrive) + '<span class="unit">kg</span>';
+			document.getElementById('k-strive-sub').textContent = staStrive ? 'Gán theo từng lô' : '—';
+			document.getElementById('k-eff').innerHTML = D.fmtNum(eff) + '<span class="unit">kg</span>';
+			document.getElementById('k-eff-sub').textContent = D.fmtTon(eff);
+
+			// Monthly
+			const pcts = D.DEFAULT_MONTH_PERCENT;
+			const curM = year === D.currentYear ? D.currentMonth : (year < D.currentYear ? 12 : 0);
+			let html = '<thead><tr><th class="sticky-col">Tháng</th><th class="text-end">% Kế hoạch</th><th class="text-end">Kế hoạch (kg)</th><th class="text-end">Bổ sung</th><th class="text-end">Hiệu lực</th><th class="text-end">Thực hiện</th><th class="text-end">% đạt</th></tr></thead><tbody>';
+			const actual = D.mockMonthlyActual(staPlan, pcts);
+			actual.forEach((m, i) => {
+				const cls = (i+1) < curM ? 'month-past' : ((i+1) === curM ? 'month-current' : 'month-future');
+				const suppM = Math.round(staSupp * pcts[i] / 100);
+				const eff2 = m.plan + suppM;
+				const pct = m.actual ? (m.actual / eff2 * 100) : null;
+				const pc = !pct ? '' : pct >= 100 ? 'text-success' : pct >= 85 ? 'text-warning' : 'text-danger';
+				html += `<tr><td class="sticky-col"><strong>${D.MONTHS_VN[i]}</strong></td>
+					<td class="text-end ${cls}">${pcts[i]}%</td>
+					<td class="text-end ${cls}">${D.fmtNum(m.plan)}</td>
+					<td class="text-end ${cls} text-info">${suppM ? D.fmtNum(suppM) : '—'}</td>
+					<td class="text-end ${cls} fw-bold">${D.fmtNum(eff2)}</td>
+					<td class="text-end ${cls}">${m.actual ? D.fmtNum(m.actual) : '—'}</td>
+					<td class="text-end ${cls} fw-bold ${pc}">${pct ? pct.toFixed(1)+'%' : '—'}</td></tr>`;
+			});
+			document.getElementById('tbl-monthly').innerHTML = html + '</tbody>';
+
+			// Phần cây list
+			const partsBox = document.getElementById('parts-tbody');
+			const allParts = [];
+			(sta.lots || []).forEach(lot => {
+				for (let i = 1; i <= lot.parts; i++) {
+					allParts.push({ lot, partNo: i, workerName: WORKERS[(lot.name.length + i) % WORKERS.length] });
+				}
+			});
+			const lotTrees = {}; (sta.lots || []).forEach(l => lotTrees[l.id] = l.trees);
+			const totalPartsTrees = allParts.reduce((s, p) => s + (lotTrees[p.lot.id] / p.lot.parts), 0);
+			partsBox.innerHTML = allParts.map((p, i) => {
+				const treesPart = Math.round(lotTrees[p.lot.id] / p.lot.parts);
+				const partPlan = Math.round(staPlan * (treesPart / totalPartsTrees));
+				const age = year - p.lot.year;
+				const accept = age < 20 && (i % 5 !== 4);
+				const partStrive = accept && staStrive ? Math.round(partPlan * (company.strivePlans[year].percent || 8) / 100) : 0;
+				const assigned = i % 14 !== 13; // 1 trong 14 phần cây trống
+				const status = !assigned
+					? '<span class="ksl-status danger"><i class="bi bi-exclamation-circle"></i>Phần cây trống</span>'
+					: '<span class="ksl-status locked"><i class="bi bi-person-check"></i>Đã gán công nhân</span>';
+				return `<tr>
+					<td><strong>${p.lot.name}</strong><div class="small text-inverse text-opacity-50">${p.lot.seedling} · ${age} năm</div></td>
+					<td>Phần ${p.partNo}</td>
+					<td>${assigned ? p.workerName : '<span class="text-inverse text-opacity-40">— (chưa gán)</span>'}</td>
+					<td class="text-end">${treesPart}</td>
+					<td class="text-end">${D.fmtNum(partPlan)}</td>
+					<td class="text-end ${partStrive ? 'text-success fw-bold' : 'text-inverse text-opacity-40'}">${partStrive ? '+' + D.fmtNum(partStrive) : '—'}</td>
+					<td class="text-end fw-bold">${D.fmtNum(partPlan + partStrive)}</td>
+					<td>${status}</td>
+				</tr>`;
+			}).join('');
+		}
+		render();
+	})();
+	</script>
+</body>
+</html>

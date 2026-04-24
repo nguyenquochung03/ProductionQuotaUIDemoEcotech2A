@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<title>Khoán sản lượng | Ga 2.1 Bảng điều khiển phần cây và công nhân</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="../hud_admin_v2.3/template_html/dist/assets/css/vendor.min.css" rel="stylesheet">
+	<link href="../hud_admin_v2.3/template_html/dist/assets/css/app.min.css" rel="stylesheet">
+	<link href="_app.css" rel="stylesheet">
+</head>
+<body>
+	<div id="app" class="app">
+		<div id="content" class="app-content">
+
+			<div class="ksl-page-header">
+				<div class="page-icon"><i class="bi bi-speedometer2"></i></div>
+				<div>
+					<h1>Theo dõi tiến độ phần cây & công nhân</h1>
+					<div class="subtitle">Cấp Ga / Tổ · Kế hoạch / Thực hiện / % đạt / Công nhân được gán / Vượt khoán · Xếp hạng công nhân · Luỹ kế</div>
+				</div>
+			</div>
+
+			<div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+				<select class="form-select form-select-sm w-auto" id="sel-year"></select>
+				<div class="btn-group btn-group-sm" role="group">
+					<input type="radio" class="btn-check" id="v-month" name="vmode" checked>
+					<label class="btn btn-outline-inverse" for="v-month">Theo tháng</label>
+					<input type="radio" class="btn-check" id="v-year" name="vmode">
+					<label class="btn btn-outline-inverse" for="v-year">Theo năm</label>
+				</div>
+				<div class="ms-auto d-flex gap-2">
+					<button class="btn btn-sm btn-outline-inverse"><i class="bi bi-file-earmark-excel me-1"></i>Xuất Excel</button>
+				</div>
+			</div>
+
+			<!-- Nhóm: Kế hoạch -->
+			<div class="small fw-bold text-inverse text-opacity-40 mb-1 ps-1">KẾ HOẠCH</div>
+			<div class="row g-2 mb-2">
+				<div class="col-lg-4 col-md-4 col-6">
+					<div class="ksl-kpi">
+						<div class="lbl">Kế hoạch năm gốc</div>
+						<div class="val" id="k-plan">—</div>
+						<div class="sub" id="k-plan-sub">—</div>
+					</div>
+				</div>
+				<div class="col-lg-4 col-md-4 col-6">
+					<div class="ksl-kpi accent-theme">
+						<div class="lbl">Kế hoạch hiệu lực <span class="text-inverse text-opacity-40 fw-normal">(gốc + bổ sung)</span></div>
+						<div class="val" id="k-effective">—</div>
+						<div class="sub" id="k-effective-sub">—</div>
+					</div>
+				</div>
+				<div class="col-lg-4 col-md-4 col-6">
+					<div class="ksl-kpi accent-theme">
+						<div class="lbl">Tổng chỉ tiêu <span class="text-inverse text-opacity-40 fw-normal">(hiệu lực + phấn đấu)</span></div>
+						<div class="val" id="k-total-target">—</div>
+						<div class="sub" id="k-total-target-sub">—</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Nhóm: Thực hiện -->
+			<div class="small fw-bold text-inverse text-opacity-40 mb-1 ps-1">THỰC HIỆN</div>
+			<div class="row g-2 mb-3">
+				<div class="col-lg-3 col-md-3 col-6">
+					<div class="ksl-kpi accent-info">
+						<div class="lbl">Luỹ kế thực hiện</div>
+						<div class="val" id="k-done">—</div>
+						<div class="sub" id="k-done-sub">—</div>
+					</div>
+				</div>
+				<div class="col-lg-3 col-md-3 col-6">
+					<div class="ksl-kpi accent-warn">
+						<div class="lbl">% đạt</div>
+						<div class="val" id="k-pct">—<span class="unit">%</span></div>
+						<div class="sub" id="k-pct-sub">—</div>
+					</div>
+				</div>
+				<div class="col-lg-3 col-md-3 col-6">
+					<div class="ksl-kpi accent-theme">
+						<div class="lbl">Công nhân vượt khoán</div>
+						<div class="val" id="k-over">—</div>
+						<div class="sub">Diện khen thưởng</div>
+					</div>
+				</div>
+				<div class="col-lg-3 col-md-3 col-6">
+					<div class="ksl-kpi accent-danger">
+						<div class="lbl">Phần cây cảnh báo</div>
+						<div class="val" id="k-alert">—</div>
+						<div class="sub">&lt;40% giữa tháng</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="row mb-3">
+				<div class="col-lg-8 mb-3">
+					<div class="card h-100">
+						<div class="card-body">
+							<h5 class="fw-bold mb-3"><i class="bi bi-graph-up me-2 text-theme"></i>Lũy kế phần cây — 12 tháng</h5>
+							<div id="chart" style="height:320px;"></div>
+						</div>
+						<div class="card-arrow">
+							<div class="card-arrow-top-left"></div><div class="card-arrow-top-right"></div>
+							<div class="card-arrow-bottom-left"></div><div class="card-arrow-bottom-right"></div>
+						</div>
+					</div>
+				</div>
+				<div class="col-lg-4 mb-3">
+					<div class="card h-100">
+						<div class="card-body">
+							<h5 class="fw-bold mb-3"><i class="bi bi-trophy-fill me-2 text-warning"></i>Xếp hạng công nhân</h5>
+							<div id="rank-list"></div>
+						</div>
+						<div class="card-arrow">
+							<div class="card-arrow-top-left"></div><div class="card-arrow-top-right"></div>
+							<div class="card-arrow-bottom-left"></div><div class="card-arrow-bottom-right"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="card mb-3">
+				<div class="card-body">
+					<h5 class="fw-bold mb-3"><i class="bi bi-table me-2 text-theme"></i>Chi tiết phần cây — <span id="tbl-title">Theo tháng</span></h5>
+					<div class="table-responsive" style="max-height:600px; overflow:auto;">
+						<table class="table table-ksl align-middle mb-0" id="tbl-parts"></table>
+					</div>
+					<div class="ksl-note mt-3 mb-0">
+						<strong><i class="bi bi-info-circle me-1"></i>Phần cây trống</strong> vẫn giữ khoán (không tính xếp hạng công nhân nhưng vẫn tính chỉ số của Ga).
+						<span class="ms-2"><strong>Vượt khoán</strong>: ghi nhận "còn lại" âm, hiển thị rõ.</span>
+					</div>
+				</div>
+				<div class="card-arrow">
+					<div class="card-arrow-top-left"></div><div class="card-arrow-top-right"></div>
+					<div class="card-arrow-bottom-left"></div><div class="card-arrow-bottom-right"></div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	<script src="_data.js"></script>
+	<script src="_shell.js"></script>
+	<script>Shell.render({ activePageId: 'ga-2-1', scope: 'ga' });</script>
+
+	<script src="../hud_admin_v2.3/template_html/dist/assets/js/vendor.min.js"></script>
+	<script src="../hud_admin_v2.3/template_html/dist/assets/js/app.min.js"></script>
+	<script src="../hud_admin_v2.3/template_html/dist/assets/plugins/apexcharts/dist/apexcharts.min.js"></script>
+
+	<script>
+	(function () {
+		const state = Shell.getState();
+		const company = KSL_DATA.getCompany(state.companyId);
+		const D = KSL_DATA;
+		const stas = D.flatStations(company);
+		const sta = stas.find(s => s.id === state.stationId) || stas[0];
+		if (!sta) return;
+
+		const years = Object.keys(company.plans).map(Number).sort((a,b)=>b-a);
+		document.getElementById('sel-year').innerHTML = years.map(y => `<option value="${y}" ${y === D.currentYear ? 'selected' : ''}>Năm ${y}</option>`).join('');
+
+		let currentView = 'month';
+		document.getElementById('v-month').onchange = () => { currentView = 'month'; render(); };
+		document.getElementById('v-year').onchange = () => { currentView = 'year'; render(); };
+		document.getElementById('sel-year').onchange = render;
+
+		const WORKERS = ['Nguyễn Văn An', 'Trần Thị Bình', 'Lê Văn Cường', 'Phạm Văn Dũng', 'Hoàng Thị Em', 'Võ Văn Phúc', 'Đặng Thị Giang', 'Bùi Văn Hải', 'Đỗ Thị Yến', 'Ngô Văn Kiên'];
+		let chart = null;
+
+		function render() {
+			const year = parseInt(document.getElementById('sel-year').value, 10);
+			const kp = company.plans[year];
+			const allStas = D.flatStations(company);
+			const totalTrees = allStas.reduce((s, x) => s + (x.lots || []).reduce((a,l) => a + l.trees, 0), 0);
+			const staTrees = (sta.lots || []).reduce((a, l) => a + l.trees, 0);
+			const staPlan = Math.round(kp.total * (staTrees / totalTrees));
+
+			// Build parts
+			const parts = [];
+			(sta.lots || []).forEach(lot => {
+				for (let i = 1; i <= lot.parts; i++) {
+					const partTrees = Math.round(lot.trees / lot.parts);
+					const plan = Math.round(staPlan * (partTrees / staTrees));
+					const assigned = (lot.name.length * i) % 14 !== 13;
+					const workerName = WORKERS[(lot.name.length + i * 3) % WORKERS.length];
+					// Giả lập %
+					let pct;
+					if (!assigned) pct = 0;
+					else pct = 70 + (lot.name.length * 7 + i * 11) % 55; // 70-124
+					const done = Math.round(plan * pct / 100);
+					parts.push({ id: lot.id + '-p' + i, lot, partNo: i, assigned, workerName: assigned ? workerName : null, plan, done, pct });
+				}
+			});
+
+			const totalPlan = parts.reduce((s, p) => s + p.plan, 0);
+			const totalDone = parts.reduce((s, p) => s + p.done, 0);
+			const pct = totalDone / totalPlan * 100;
+			const empty = parts.filter(p => !p.assigned).length;
+			const overCount = parts.filter(p => p.assigned && p.pct > 100).length;
+			const alertCount = parts.filter(p => p.assigned && p.pct < 40).length;
+			const uniqW = new Set(parts.filter(p => p.assigned).map(p => p.workerName));
+
+			// Bổ sung và phấn đấu của Ga (tỷ lệ theo số cây)
+			const suppTotal = (company.supplementary || []).filter(s => s.date.startsWith(String(year))).reduce((s, x) => s + x.kg, 0);
+			const striveTotal = company.strivePlans[year] ? company.strivePlans[year].total : 0;
+			const staSupp = Math.round(suppTotal * (staTrees / totalTrees));
+			const staStrive = Math.round(striveTotal * (staTrees / totalTrees));
+			const staEffective = staPlan + staSupp;
+
+			document.getElementById('k-plan').innerHTML = D.fmtNum(staPlan) + '<span class="unit">kg</span>';
+			document.getElementById('k-plan-sub').textContent = D.fmtTon(staPlan);
+			document.getElementById('k-effective').innerHTML = D.fmtNum(staEffective) + '<span class="unit">kg</span>';
+			document.getElementById('k-effective-sub').textContent = staSupp ? `Gốc + bổ sung ${D.fmtTon(staSupp)}` : 'Chưa có bổ sung';
+			document.getElementById('k-total-target').innerHTML = D.fmtNum(staEffective + staStrive) + '<span class="unit">kg</span>';
+			document.getElementById('k-total-target-sub').textContent = staStrive ? `Hiệu lực + phấn đấu ${D.fmtTon(staStrive)}` : 'Chưa có phấn đấu';
+			document.getElementById('k-done').innerHTML = D.fmtNum(totalDone) + '<span class="unit">kg</span>';
+			document.getElementById('k-done-sub').textContent = (totalDone/staEffective*100).toFixed(1) + '% kế hoạch hiệu lực';
+			document.getElementById('k-pct').innerHTML = pct.toFixed(1) + '<span class="unit">%</span>';
+			document.getElementById('k-pct-sub').textContent = pct >= 100 ? 'Đạt / vượt' : pct >= 85 ? 'Gần đạt' : 'Đang hụt';
+			document.getElementById('k-over').textContent = overCount;
+			document.getElementById('k-alert').textContent = alertCount;
+
+			// Workers rank
+			const wmap = new Map();
+			parts.filter(p => p.assigned).forEach(p => {
+				if (!wmap.has(p.workerName)) wmap.set(p.workerName, { name: p.workerName, parts: 0, plan: 0, done: 0 });
+				const w = wmap.get(p.workerName);
+				w.parts++; w.plan += p.plan; w.done += p.done;
+			});
+			const wArr = Array.from(wmap.values()).map(w => ({ ...w, pct: w.done/w.plan*100 })).sort((a,b) => b.pct - a.pct);
+			document.getElementById('rank-list').innerHTML = wArr.map((w, i) => {
+				const rnkCls = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+				const pc = w.pct >= 100 ? 'text-success' : w.pct >= 90 ? 'text-warning' : 'text-danger';
+				return `<div class="ksl-rank-row">
+					<div class="rnk ${rnkCls}">${i+1}</div>
+					<div class="flex-1">
+						<div class="fw-bold">${w.name}</div>
+						<div class="small text-inverse text-opacity-60">${w.parts} phần · ${D.fmtKg(w.done)}/${D.fmtKg(w.plan)}</div>
+					</div>
+					<div class="text-end fw-bold ${pc}">${w.pct.toFixed(0)}%</div>
+				</div>`;
+			}).join('');
+
+			// Chart
+			if (chart) chart.destroy();
+			const monthly = D.mockMonthlyActual(staPlan, D.DEFAULT_MONTH_PERCENT);
+			const curM = year === D.currentYear ? D.currentMonth : 12;
+			const cumP = []; let cp = 0;
+			monthly.forEach(m => { cp += m.plan; cumP.push(cp); });
+			const cumA = []; let ca = 0;
+			monthly.forEach((m, i) => { if (i < curM) { ca += m.actual; cumA.push(ca); } });
+			chart = new ApexCharts(document.getElementById('chart'), {
+				chart: { type: 'line', height: 320, toolbar: { show: false }, background: 'transparent' },
+				theme: { mode: 'dark' },
+				colors: ['#6c757d', getComputedStyle(document.body).getPropertyValue('--bs-theme') || '#3cd2a5'],
+				series: [{ name: 'Kế hoạch luỹ kế', data: cumP, type: 'line' }, { name: 'Thực hiện luỹ kế', data: cumA, type: 'area' }],
+				stroke: { curve: 'smooth', width: [2, 3], dashArray: [6, 0] },
+				xaxis: { categories: D.MONTHS_SHORT },
+				yaxis: { labels: { formatter: v => D.fmtNum(v) } },
+				dataLabels: { enabled: false },
+				legend: { position: 'top' },
+				grid: { borderColor: 'rgba(255,255,255,0.08)' },
+				tooltip: { y: { formatter: v => D.fmtKg(v) } }
+			});
+			chart.render();
+
+			// Parts detail table
+			const tbl = document.getElementById('tbl-parts');
+			document.getElementById('tbl-title').textContent = currentView === 'month' ? ('Theo tháng — năm ' + year) : ('Theo năm — so sánh các năm');
+			if (currentView === 'month') {
+				tbl.innerHTML = `<thead><tr>
+					<th>Lô · Phần</th><th>Công nhân</th>
+					<th class="text-end">Kế hoạch năm (kg)</th><th class="text-end">Thực hiện năm (kg)</th>
+					<th class="text-end">Còn lại</th><th class="text-end">% đạt</th>
+					<th style="width:180px;">Tiến độ</th><th>Trạng thái</th>
+				</tr></thead><tbody>
+				${parts.map(p => {
+					const remaining = p.plan - p.done;
+					const pc = p.pct >= 100 ? 'text-success' : p.pct >= 85 ? 'text-warning' : p.pct >= 40 ? 'text-warning' : 'text-danger';
+					const barCls = p.pct >= 100 ? 'over' : p.pct >= 85 ? '' : p.pct >= 40 ? 'warn' : 'danger';
+					const barWidth = Math.min(p.pct, 100);
+					let badge = '';
+					if (!p.assigned) badge = '<span class="ksl-status danger"><i class="bi bi-exclamation-circle"></i>Phần cây trống</span>';
+					else if (p.pct > 100) badge = '<span class="ksl-status locked"><i class="bi bi-stars"></i>VƯỢT KHOÁN</span>';
+					else if (p.pct < 40) badge = '<span class="ksl-status danger"><i class="bi bi-exclamation-triangle"></i>&lt;40% giữa tháng</span>';
+					else badge = '<span class="ksl-status info">Đang cạo</span>';
+					return `<tr>
+						<td><strong>${p.lot.name}</strong> · Phần ${p.partNo}</td>
+						<td>${p.assigned ? p.workerName : '<span class="text-inverse text-opacity-40">— Trống</span>'}</td>
+						<td class="text-end">${D.fmtNum(p.plan)}</td>
+						<td class="text-end">${D.fmtNum(p.done)}</td>
+						<td class="text-end ${remaining < 0 ? 'text-success fw-bold' : ''}">${remaining >= 0 ? D.fmtNum(remaining) : '−' + D.fmtNum(-remaining) + ' (vượt)'}</td>
+						<td class="text-end fw-bold ${pc}">${p.pct.toFixed(0)}%</td>
+						<td><div class="ksl-progress"><span class="${barCls}" style="width:${barWidth.toFixed(0)}%"></span></div></td>
+						<td>${badge}</td>
+					</tr>`;
+				}).join('')}
+				</tbody>`;
+			} else {
+				tbl.innerHTML = `<thead><tr>
+					<th>Lô · Phần</th><th>Công nhân</th>
+					${years.slice().reverse().map(y => `<th class="text-end">${y}</th>`).join('')}
+				</tr></thead><tbody>
+				${parts.map(p => {
+					return `<tr>
+						<td><strong>${p.lot.name}</strong> · Phần ${p.partNo}</td>
+						<td>${p.assigned ? p.workerName : '—'}</td>
+						${years.slice().reverse().map(y => {
+							const kpy = company.plans[y];
+							const yplan = Math.round(kpy.total * (p.plan/staPlan));
+							const ydone = y <= D.currentYear ? Math.round(yplan * (0.75 + (p.lot.name.length * p.partNo * y) % 30 / 100)) : 0;
+							const pc = ydone ? ydone/yplan*100 : 0;
+							const cls = pc >= 100 ? 'text-success' : pc >= 85 ? 'text-warning' : pc ? 'text-danger' : '';
+							return `<td class="text-end small"><div class="${cls} fw-bold">${pc ? pc.toFixed(0)+'%' : '—'}</div><div class="text-inverse text-opacity-50">${ydone ? D.fmtNum(ydone) : '—'}</div></td>`;
+						}).join('')}
+					</tr>`;
+				}).join('')}
+				</tbody>`;
+			}
+		}
+		render();
+	})();
+	</script>
+</body>
+</html>

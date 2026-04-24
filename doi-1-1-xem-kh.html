@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<title>Khoán sản lượng | Đội 1.1 Xem kế hoạch từ Công ty</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="../hud_admin_v2.3/template_html/dist/assets/css/vendor.min.css" rel="stylesheet">
+	<link href="../hud_admin_v2.3/template_html/dist/assets/css/app.min.css" rel="stylesheet">
+	<link href="_app.css" rel="stylesheet">
+</head>
+<body>
+	<div id="app" class="app">
+		<div id="content" class="app-content">
+
+			<div class="ksl-page-header">
+				<div class="page-icon"><i class="bi bi-file-earmark-check"></i></div>
+				<div>
+					<h1>Xem kế hoạch được giao từ Công ty</h1>
+					<div class="subtitle">Cấp Đội · Read-only · Khoán năm + % 12 tháng + Phấn đấu · Giao từ Phòng Kỹ thuật</div>
+				</div>
+			</div>
+
+			<div class="ksl-note info">
+				<i class="bi bi-info-circle me-1"></i>Đây là <strong>chỉ tiêu bắt buộc</strong> Công ty giao xuống Đội — không được chỉnh sửa. Dữ liệu được đồng bộ từ tab <em>Công ty 1.1 / 1.2 / 2.1 / 2.2 / 2.3</em>.
+			</div>
+
+			<div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+				<div class="me-2">
+					<div class="small text-inverse text-opacity-50">ĐỘI HIỆN TẠI</div>
+					<div class="fw-bold fs-5" id="team-name">—</div>
+				</div>
+				<select class="form-select form-select-sm w-auto" id="sel-year"></select>
+			</div>
+
+			<!-- Hàng chỉ số tổng quan -->
+			<div class="row g-2 mb-3">
+				<div class="col-lg-3 col-md-6">
+					<div class="ksl-kpi accent-theme">
+						<div class="lbl">Kế hoạch khoán năm (gốc)</div>
+						<div class="val" id="k-base">—</div>
+						<div class="sub" id="k-base-sub">—</div>
+					</div>
+				</div>
+				<div class="col-lg-3 col-md-6">
+					<div class="ksl-kpi accent-info">
+						<div class="lbl">Bổ sung đã nhận</div>
+						<div class="val" id="k-supp">—</div>
+						<div class="sub" id="k-supp-sub">—</div>
+					</div>
+				</div>
+				<div class="col-lg-3 col-md-6">
+					<div class="ksl-kpi accent-theme">
+						<div class="lbl">Kế hoạch hiệu lực</div>
+						<div class="val" id="k-eff">—</div>
+						<div class="sub" id="k-eff-sub">—</div>
+					</div>
+				</div>
+				<div class="col-lg-3 col-md-6">
+					<div class="ksl-kpi">
+						<div class="lbl">Phấn đấu được giao</div>
+						<div class="val" id="k-strive">—</div>
+						<div class="sub" id="k-strive-sub">—</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Phân bổ % 12 tháng -->
+			<div class="card mb-3">
+				<div class="card-body">
+					<div class="d-flex align-items-center mb-3 flex-wrap gap-2">
+						<h5 class="fw-bold mb-0 flex-1"><i class="bi bi-calendar3 me-2 text-theme"></i>Phân bổ % 12 tháng cho Đội</h5>
+						<span class="ksl-version-pill"><i class="bi bi-git"></i>Phiên bản <span id="cur-v">—</span></span>
+						<span class="small text-inverse text-opacity-60" id="version-meta">—</span>
+					</div>
+					<div class="table-responsive">
+						<table class="ksl-monthly-grid w-100" id="tbl-monthly"></table>
+					</div>
+					<div class="ksl-note mt-3 mb-0">
+						<strong><i class="bi bi-lightbulb me-1"></i>Ghi chú:</strong> Cột màu xám là tháng đã qua; cột màu vàng là tháng hiện tại; cột theo màu thương hiệu là tháng tương lai. Công ty có thể tạo phiên bản mới bất cứ lúc nào — Đội chỉ nhận và theo dõi.
+					</div>
+				</div>
+				<div class="card-arrow">
+					<div class="card-arrow-top-left"></div><div class="card-arrow-top-right"></div>
+					<div class="card-arrow-bottom-left"></div><div class="card-arrow-bottom-right"></div>
+				</div>
+			</div>
+
+			<!-- Phấn đấu theo lô -->
+			<div class="card mb-3" id="strive-card">
+				<div class="card-body">
+					<h5 class="fw-bold mb-3"><i class="bi bi-graph-up-arrow me-2 text-theme"></i>Phấn đấu được gán theo từng lô</h5>
+					<div class="table-responsive">
+						<table class="table table-ksl align-middle mb-0">
+							<thead>
+								<tr>
+									<th>Ga</th>
+									<th>Lô</th>
+									<th class="text-end">Kế hoạch khoán (kg)</th>
+									<th class="text-end">Phấn đấu (kg)</th>
+									<th class="text-end">Tổng chỉ tiêu (kg)</th>
+									<th>Ghi chú</th>
+								</tr>
+							</thead>
+							<tbody id="strive-tbody"></tbody>
+						</table>
+					</div>
+				</div>
+				<div class="card-arrow">
+					<div class="card-arrow-top-left"></div><div class="card-arrow-top-right"></div>
+					<div class="card-arrow-bottom-left"></div><div class="card-arrow-bottom-right"></div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	<script src="_data.js"></script>
+	<script src="_shell.js"></script>
+	<script>Shell.render({ activePageId: 'doi-1-1', scope: 'doi' });</script>
+
+	<script src="../hud_admin_v2.3/template_html/dist/assets/js/vendor.min.js"></script>
+	<script src="../hud_admin_v2.3/template_html/dist/assets/js/app.min.js"></script>
+
+	<script>
+	(function () {
+		const state = Shell.getState();
+		const company = KSL_DATA.getCompany(state.companyId);
+		const D = KSL_DATA;
+		const team = company.teams.find(t => t.id === state.teamId) || company.teams[0];
+
+		document.getElementById('team-name').textContent = team.name;
+
+		const years = Object.keys(company.plans).map(Number).sort((a,b)=>b-a);
+		const sel = document.getElementById('sel-year');
+		sel.innerHTML = years.map(y => `<option value="${y}" ${y === D.currentYear ? 'selected' : ''}>Năm ${y}</option>`).join('');
+		sel.addEventListener('change', render);
+
+		function render() {
+			const year = parseInt(sel.value, 10);
+			const kp = company.plans[year];
+
+			// Chia theo tỷ lệ số cây của đội (demo: share đều)
+			const teams = company.teams;
+			const idx = teams.findIndex(t => t.id === team.id);
+			const share = (1 / teams.length) * (0.9 + idx * 0.1);
+			const basePlan = Math.round(kp.total * share);
+			const supp = (company.supplementary || []).filter(s => s.date.startsWith(String(year))).reduce((s, x) => s + x.kg, 0);
+			const suppTeam = Math.round(supp * share);
+			const effective = basePlan + suppTeam;
+			const strivePlan = company.strivePlans[year] ? Math.round(company.strivePlans[year].total * share) : 0;
+
+			document.getElementById('k-base').innerHTML = D.fmtNum(basePlan) + '<span class="unit">kg</span>';
+			document.getElementById('k-base-sub').textContent = D.fmtTon(basePlan);
+			document.getElementById('k-supp').innerHTML = D.fmtNum(suppTeam) + '<span class="unit">kg</span>';
+			document.getElementById('k-supp-sub').textContent = suppTeam ? `+${(suppTeam/basePlan*100).toFixed(1)}% so với kế hoạch gốc` : 'Chưa nhận';
+			document.getElementById('k-eff').innerHTML = D.fmtNum(effective) + '<span class="unit">kg</span>';
+			document.getElementById('k-eff-sub').textContent = D.fmtTon(effective);
+			document.getElementById('k-strive').innerHTML = D.fmtNum(strivePlan) + '<span class="unit">kg</span>';
+			document.getElementById('k-strive-sub').textContent = strivePlan ? `+${(strivePlan/basePlan*100).toFixed(1)}% phấn đấu thêm` : '—';
+
+			// Monthly
+			const vers = company.monthlyVersions[year] || [];
+			const latest = vers[vers.length - 1];
+			document.getElementById('cur-v').textContent = latest ? latest.v : '1';
+			document.getElementById('version-meta').innerHTML = latest ? `${latest.createdAt} · <em>${latest.note}</em>` : 'Bản đầu tiên';
+
+			const curM = year === D.currentYear ? D.currentMonth : (year < D.currentYear ? 12 : 0);
+			const pcts = D.DEFAULT_MONTH_PERCENT;
+			let html = '<thead><tr><th class="sticky-col" style="min-width:220px;">Tháng</th>';
+			html += `<th class="text-end">% Kế hoạch</th><th class="text-end">Kế hoạch (kg)</th><th class="text-end">Bổ sung (kg)</th><th class="text-end">Hiệu lực</th><th class="text-end">Thực hiện</th><th class="text-end">% đạt</th></tr></thead><tbody>`;
+			const actual = D.mockMonthlyActual(basePlan, pcts);
+			actual.forEach((m, i) => {
+				const cls = (i+1) < curM ? 'month-past' : ((i+1) === curM ? 'month-current' : 'month-future');
+				const suppM = Math.round(suppTeam * pcts[i] / 100);
+				const eff = m.plan + suppM;
+				const pct = m.actual ? (m.actual / eff * 100) : null;
+				const pctCls = !pct ? '' : pct >= 100 ? 'text-success' : pct >= 85 ? 'text-warning' : 'text-danger';
+				html += `<tr><td class="sticky-col"><strong>${D.MONTHS_VN[i]}</strong></td>
+					<td class="text-end ${cls}">${pcts[i]}%</td>
+					<td class="text-end ${cls}">${D.fmtNum(m.plan)}</td>
+					<td class="text-end ${cls} text-info">${suppM ? D.fmtNum(suppM) : '—'}</td>
+					<td class="text-end ${cls} fw-bold">${D.fmtNum(eff)}</td>
+					<td class="text-end ${cls}">${m.actual ? D.fmtNum(m.actual) : '—'}</td>
+					<td class="text-end ${cls} fw-bold ${pctCls}">${pct ? pct.toFixed(1)+'%' : '—'}</td></tr>`;
+			});
+			const totalP = actual.reduce((s, m) => s + m.plan, 0);
+			const totalA = actual.reduce((s, m) => s + m.actual, 0);
+			html += `<tr class="total-row"><td class="sticky-col">TỔNG ĐỘI</td>
+				<td class="text-end">100%</td>
+				<td class="text-end">${D.fmtNum(totalP)}</td>
+				<td class="text-end text-info">${suppTeam ? D.fmtNum(suppTeam) : '—'}</td>
+				<td class="text-end text-theme">${D.fmtNum(effective)}</td>
+				<td class="text-end">${D.fmtNum(totalA)}</td>
+				<td class="text-end">${(totalA/effective*100).toFixed(1)}%</td></tr></tbody>`;
+			document.getElementById('tbl-monthly').innerHTML = html;
+
+			// Phấn đấu theo lô
+			const lots = [];
+			if (company.model === '1') {
+				(team.stations || []).forEach(s => (s.lots || []).forEach(l => lots.push({ ...l, stationName: s.name })));
+			} else {
+				(team.lots || []).forEach(l => lots.push({ ...l, stationName: null }));
+			}
+			const totalTrees = lots.reduce((s, l) => s + l.trees, 0);
+			const sb = document.getElementById('strive-tbody');
+			sb.innerHTML = lots.map((l, i) => {
+				const lotBase = Math.round(basePlan * (l.trees / totalTrees));
+				const age = year - l.year;
+				const accept = age < 20 && i % 4 !== 3; // demo
+				const lotStrive = accept && strivePlan ? Math.round(lotBase * (company.strivePlans[year].percent || 8) / 100) : 0;
+				const note = !accept ? '<span class="text-inverse text-opacity-50">Không nhận (lô yếu/cây già)</span>' : '';
+				return `<tr>
+					<td>${l.stationName || '—'}</td>
+					<td><strong>${l.name}</strong><div class="small text-inverse text-opacity-50">${l.seedling} · ${age} năm</div></td>
+					<td class="text-end">${D.fmtNum(lotBase)}</td>
+					<td class="text-end ${lotStrive ? 'text-success fw-bold' : 'text-inverse text-opacity-40'}">${lotStrive ? '+' + D.fmtNum(lotStrive) : '—'}</td>
+					<td class="text-end fw-bold">${D.fmtNum(lotBase + lotStrive)}</td>
+					<td class="small">${note}</td>
+				</tr>`;
+			}).join('');
+		}
+
+		render();
+	})();
+	</script>
+</body>
+</html>

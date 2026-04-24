@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<title>Khoán sản lượng | 2.3 Cân đối sản lượng liên đội</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="../hud_admin_v2.3/template_html/dist/assets/css/vendor.min.css" rel="stylesheet">
+	<link href="../hud_admin_v2.3/template_html/dist/assets/css/app.min.css" rel="stylesheet">
+	<link href="_app.css" rel="stylesheet">
+</head>
+<body>
+	<div id="app" class="app">
+		<div id="content" class="app-content">
+
+			<div class="ksl-page-header">
+				<div class="page-icon"><i class="bi bi-arrow-left-right"></i></div>
+				<div>
+					<h1>Cân đối sản lượng liên đội</h1>
+					<div class="subtitle">Cấp Công ty · Bù sản lượng giữa các đội cuối năm — chỉ ghi nhận trên sổ sách, <strong>không di chuyển mủ vật lý</strong></div>
+				</div>
+			</div>
+
+			<!-- OVERVIEW -->
+			<div class="row g-2 mb-3">
+				<div class="col-md-3 col-6">
+					<div class="ksl-kpi accent-theme">
+						<div class="lbl">Kế hoạch năm Công ty</div>
+						<div class="val" id="k-plan">—</div>
+						<div class="sub" id="k-plan-sub">—</div>
+					</div>
+				</div>
+				<div class="col-md-3 col-6">
+					<div class="ksl-kpi accent-info">
+						<div class="lbl">Lũy kế thực hiện</div>
+						<div class="val" id="k-done">—</div>
+						<div class="sub" id="k-done-sub">—</div>
+					</div>
+				</div>
+				<div class="col-md-3 col-6">
+					<div class="ksl-kpi accent-warn">
+						<div class="lbl">Đội thiếu chỉ tiêu</div>
+						<div class="val" id="k-short">—</div>
+						<div class="sub" id="k-short-sub">—</div>
+					</div>
+				</div>
+				<div class="col-md-3 col-6">
+					<div class="ksl-kpi accent-theme">
+						<div class="lbl">Đội vượt chỉ tiêu</div>
+						<div class="val" id="k-over">—</div>
+						<div class="sub" id="k-over-sub">—</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="ksl-note info">
+				<strong><i class="bi bi-info-circle me-1"></i>Nguyên tắc:</strong>
+				Chỉ dùng khi có Đội vượt và Đội hụt cuối năm. Cân đối là <strong>bút toán sổ sách</strong> (đội cho ↔ đội nhận) — không di chuyển mủ, không gộp phần cây, không ảnh hưởng chỉ số của công nhân từng phần. Cần Quyết định của lãnh đạo Công ty, ghi lý do và người duyệt.
+			</div>
+
+			<!-- So sánh Kế hoạch với Thực hiện từng đội -->
+			<div class="card mb-3">
+				<div class="card-body">
+					<div class="d-flex align-items-center mb-3 flex-wrap gap-2">
+						<h5 class="fw-bold mb-0 flex-1"><i class="bi bi-bar-chart me-2 text-theme"></i>Tình hình thực hiện các Đội — năm <span id="tag-year">—</span></h5>
+						<select class="form-select form-select-sm w-auto" id="sel-year"></select>
+					</div>
+					<div class="table-responsive">
+						<table class="table table-ksl align-middle mb-0">
+							<thead>
+								<tr>
+									<th>Đội / Nông trường</th>
+									<th class="text-end">Kế hoạch năm (kg)</th>
+									<th class="text-end">Thực hiện (kg)</th>
+									<th class="text-end">Chênh lệch</th>
+									<th class="text-end">% đạt</th>
+									<th style="min-width:180px;">Trạng thái</th>
+									<th style="min-width:140px;">Đề xuất</th>
+								</tr>
+							</thead>
+							<tbody id="teams-tbody"></tbody>
+						</table>
+					</div>
+				</div>
+				<div class="card-arrow">
+					<div class="card-arrow-top-left"></div><div class="card-arrow-top-right"></div>
+					<div class="card-arrow-bottom-left"></div><div class="card-arrow-bottom-right"></div>
+				</div>
+			</div>
+
+			<!-- Lịch sử các bút toán cân đối -->
+			<div class="card mb-3">
+				<div class="card-body">
+					<div class="d-flex align-items-center mb-3 flex-wrap gap-2">
+						<h5 class="fw-bold mb-0 flex-1"><i class="bi bi-journal-check me-2 text-theme"></i>Lịch sử bút toán cân đối</h5>
+						<button class="btn btn-outline-theme btn-sm" data-bs-toggle="modal" data-bs-target="#modal-new">
+							<i class="bi bi-plus-lg me-1"></i>Tạo bút toán mới
+						</button>
+					</div>
+					<div class="table-responsive">
+						<table class="table table-ksl align-middle mb-0">
+							<thead>
+								<tr>
+									<th style="width:5%">#</th>
+									<th>Ngày</th>
+									<th>Đội cho</th>
+									<th></th>
+									<th>Đội nhận</th>
+									<th class="text-end">Sản lượng (kg)</th>
+									<th>Lý do</th>
+									<th>Người duyệt</th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody id="balances-tbody"></tbody>
+						</table>
+					</div>
+				</div>
+				<div class="card-arrow">
+					<div class="card-arrow-top-left"></div><div class="card-arrow-top-right"></div>
+					<div class="card-arrow-bottom-left"></div><div class="card-arrow-bottom-right"></div>
+				</div>
+			</div>
+
+			<!-- Preview hiệu ứng sau cân đối -->
+			<div class="card mb-3" id="preview-card" style="display:none;">
+				<div class="card-body">
+					<h5 class="fw-bold mb-3"><i class="bi bi-eye me-2 text-theme"></i>Preview hiệu ứng sau các bút toán cân đối</h5>
+					<div class="table-responsive">
+						<table class="table table-ksl align-middle mb-0">
+							<thead>
+								<tr>
+									<th>Đội</th>
+									<th class="text-end">Kế hoạch gốc</th>
+									<th class="text-end">Đã cho (−)</th>
+									<th class="text-end">Đã nhận (+)</th>
+									<th class="text-end">Kế hoạch sau cân đối</th>
+									<th class="text-end">Thực hiện</th>
+									<th class="text-end">% đạt sau cân đối</th>
+								</tr>
+							</thead>
+							<tbody id="preview-tbody"></tbody>
+						</table>
+					</div>
+				</div>
+				<div class="card-arrow">
+					<div class="card-arrow-top-left"></div><div class="card-arrow-top-right"></div>
+					<div class="card-arrow-bottom-left"></div><div class="card-arrow-bottom-right"></div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	<!-- Modal tạo bút toán -->
+	<div class="modal fade" id="modal-new" tabindex="-1">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title"><i class="bi bi-arrow-left-right text-theme me-2"></i>Bút toán cân đối sản lượng</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body">
+					<div class="row g-3">
+						<div class="col-md-6">
+							<label class="form-label small">Đội cho <span class="text-danger">*</span></label>
+							<select class="form-select" id="sel-from"></select>
+						</div>
+						<div class="col-md-6">
+							<label class="form-label small">Đội nhận <span class="text-danger">*</span></label>
+							<select class="form-select" id="sel-to"></select>
+						</div>
+						<div class="col-md-6">
+							<label class="form-label small">Sản lượng cân đối (kg) <span class="text-danger">*</span></label>
+							<input type="number" class="form-control" placeholder="VD: 50000">
+						</div>
+						<div class="col-md-6">
+							<label class="form-label small">Ngày bút toán <span class="text-danger">*</span></label>
+							<input type="date" class="form-control" value="2026-04-24">
+						</div>
+						<div class="col-12">
+							<label class="form-label small">Lý do <span class="text-danger">*</span></label>
+							<textarea class="form-control" rows="2" placeholder="Ví dụ: Đội 3 hụt do mùa khô kéo dài; Đội 1 dư 8% — cân đối để cả 2 đạt 100% kế hoạch"></textarea>
+						</div>
+						<div class="col-md-6">
+							<label class="form-label small">Số Quyết định</label>
+							<input type="text" class="form-control" placeholder="Ví dụ: QuyetDinh-CongTy/2026/045">
+						</div>
+						<div class="col-md-6">
+							<label class="form-label small">Người duyệt <span class="text-danger">*</span></label>
+							<input type="text" class="form-control" placeholder="Ví dụ: Giám đốc Nguyễn Hồng Phước">
+						</div>
+						<div class="col-12">
+							<div class="ksl-note warn mb-0">
+								<strong>Lưu ý:</strong> Chỉ dịch chuyển trên sổ sách, không di chuyển mủ. Sau khi tạo, kế hoạch của 2 Đội được cập nhật nhưng công nhân trong từng phần cây không bị ảnh hưởng.
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-outline-inverse" data-bs-dismiss="modal">Huỷ</button>
+					<button type="button" class="btn btn-theme"><i class="bi bi-check-circle me-1"></i>Tạo bút toán</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="_data.js"></script>
+	<script src="_shell.js"></script>
+	<script>Shell.render({ activePageId: 'cty-2-3' });</script>
+
+	<script src="../hud_admin_v2.3/template_html/dist/assets/js/vendor.min.js"></script>
+	<script src="../hud_admin_v2.3/template_html/dist/assets/js/app.min.js"></script>
+
+	<script>
+	(function () {
+		const state = Shell.getState();
+		const company = KSL_DATA.getCompany(state.companyId);
+		const D = KSL_DATA;
+
+		const years = Object.keys(company.plans).map(Number).sort((a,b)=>b-a);
+		const selYear = document.getElementById('sel-year');
+		selYear.innerHTML = years.map(y => `<option value="${y}" ${y === D.currentYear - 1 ? 'selected' : ''}>Năm ${y}</option>`).join('');
+		selYear.addEventListener('change', () => render(parseInt(selYear.value, 10)));
+
+		// Populate select đội
+		const selFrom = document.getElementById('sel-from');
+		const selTo = document.getElementById('sel-to');
+		[selFrom, selTo].forEach(sel => {
+			sel.innerHTML = company.teams.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+		});
+
+		function render(year) {
+			document.getElementById('tag-year').textContent = year;
+			const kp = company.plans[year];
+			document.getElementById('k-plan').innerHTML = D.fmtNum(kp.total) + '<span class="unit">kg</span>';
+			document.getElementById('k-plan-sub').textContent = D.fmtTon(kp.total);
+
+			// Giả lập % đạt của từng đội
+			const teams = company.teams;
+			const teamData = teams.map((t, i) => {
+				const plan = Math.round(kp.total * (1 / teams.length) * (0.9 + i * 0.1));
+				// Tạo ngẫu nhiên
+				const pct = 85 + (i * 7 + t.name.length * 3) % 30; // 85-115
+				const actual = Math.round(plan * pct / 100);
+				return { t, plan, actual, pct };
+			});
+			const totalDone = teamData.reduce((s, x) => s + x.actual, 0);
+			document.getElementById('k-done').innerHTML = D.fmtNum(totalDone) + '<span class="unit">kg</span>';
+			document.getElementById('k-done-sub').textContent = (totalDone / kp.total * 100).toFixed(1) + '% kế hoạch năm';
+
+			const shorts = teamData.filter(x => x.pct < 100);
+			const overs = teamData.filter(x => x.pct > 100);
+			document.getElementById('k-short').textContent = shorts.length;
+			document.getElementById('k-short-sub').textContent = 'Hụt ' + D.fmtKg(shorts.reduce((s,x)=>s+(x.plan-x.actual),0));
+			document.getElementById('k-over').textContent = overs.length;
+			document.getElementById('k-over-sub').textContent = 'Dư ' + D.fmtKg(overs.reduce((s,x)=>s+(x.actual-x.plan),0));
+
+			// Teams table
+			const tt = document.getElementById('teams-tbody');
+			tt.innerHTML = teamData.map(x => {
+				const diff = x.actual - x.plan;
+				const pctClass = x.pct >= 100 ? 'text-success' : (x.pct >= 95 ? 'text-warning' : 'text-danger');
+				const statusBadge = x.pct >= 100
+					? '<span class="ksl-status locked"><i class="bi bi-check-circle"></i>Vượt/đạt</span>'
+					: (x.pct >= 95 ? '<span class="ksl-status info">Gần đạt</span>' : '<span class="ksl-status danger"><i class="bi bi-exclamation-triangle"></i>Hụt</span>');
+				const propose = x.pct >= 100
+					? `<button class="btn btn-sm btn-outline-theme" data-team="${x.t.id}" data-role="from">Cho sản ký</button>`
+					: `<button class="btn btn-sm btn-outline-warning" data-team="${x.t.id}" data-role="to">Nhận sản ký</button>`;
+				return `<tr>
+					<td><strong>${x.t.name}</strong></td>
+					<td class="text-end">${D.fmtNum(x.plan)}</td>
+					<td class="text-end">${D.fmtNum(x.actual)}</td>
+					<td class="text-end ${diff >= 0 ? 'text-success' : 'text-danger'}">${diff >= 0 ? '+' : ''}${D.fmtNum(diff)}</td>
+					<td class="text-end fw-bold ${pctClass}">${x.pct.toFixed(1)}%</td>
+					<td>${statusBadge}</td>
+					<td>${propose}</td>
+				</tr>`;
+			}).join('');
+
+			// Balances table
+			const bals = (company.balances || []).filter(b => b.year === year);
+			const bt = document.getElementById('balances-tbody');
+			if (!bals.length) {
+				bt.innerHTML = `<tr><td colspan="9" class="text-center text-inverse text-opacity-50 py-4">
+					<i class="bi bi-inbox fs-3 d-block mb-2"></i>Chưa có bút toán cân đối cho năm ${year}</td></tr>`;
+				document.getElementById('preview-card').style.display = 'none';
+				return;
+			}
+			bt.innerHTML = bals.map((b, i) => `<tr>
+				<td>${i + 1}</td>
+				<td>${b.date}</td>
+				<td><strong>${b.fromTeam}</strong></td>
+				<td class="text-center text-theme"><i class="bi bi-arrow-right"></i></td>
+				<td><strong>${b.toTeam}</strong></td>
+				<td class="text-end text-theme fw-bold">${D.fmtKg(b.kg)}</td>
+				<td class="small">${b.reason}</td>
+				<td class="small">${b.approvedBy}</td>
+				<td><button class="btn btn-sm btn-outline-inverse"><i class="bi bi-file-earmark-text me-1"></i>In bút toán</button></td>
+			</tr>`).join('');
+
+			// Preview
+			document.getElementById('preview-card').style.display = '';
+			const pt = document.getElementById('preview-tbody');
+			pt.innerHTML = teamData.map(x => {
+				const given = bals.filter(b => b.fromTeam === x.t.name).reduce((s,b)=>s+b.kg,0);
+				const received = bals.filter(b => b.toTeam === x.t.name).reduce((s,b)=>s+b.kg,0);
+				const newPlan = x.plan - given + received;
+				const newPct = (x.actual / newPlan) * 100;
+				return `<tr>
+					<td><strong>${x.t.name}</strong></td>
+					<td class="text-end">${D.fmtNum(x.plan)}</td>
+					<td class="text-end text-warning">${given ? '−' + D.fmtNum(given) : '—'}</td>
+					<td class="text-end text-info">${received ? '+' + D.fmtNum(received) : '—'}</td>
+					<td class="text-end text-theme fw-bold">${D.fmtNum(newPlan)}</td>
+					<td class="text-end">${D.fmtNum(x.actual)}</td>
+					<td class="text-end fw-bold ${newPct >= 100 ? 'text-success' : 'text-warning'}">${newPct.toFixed(1)}%</td>
+				</tr>`;
+			}).join('');
+		}
+
+		render(D.currentYear - 1);
+	})();
+	</script>
+</body>
+</html>

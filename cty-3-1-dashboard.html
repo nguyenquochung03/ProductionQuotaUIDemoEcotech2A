@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<title>Khoán sản lượng | 3.1 Bảng điều khiển công ty</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="../hud_admin_v2.3/template_html/dist/assets/css/vendor.min.css" rel="stylesheet">
+	<link href="../hud_admin_v2.3/template_html/dist/assets/css/app.min.css" rel="stylesheet">
+	<link href="_app.css" rel="stylesheet">
+</head>
+<body>
+	<div id="app" class="app">
+		<div id="content" class="app-content">
+
+			<div class="ksl-page-header">
+				<div class="page-icon"><i class="bi bi-speedometer2"></i></div>
+				<div>
+					<h1>Bảng điều khiển theo dõi tiến độ công ty</h1>
+					<div class="subtitle">Cấp Công ty · Kế hoạch / Thực hiện / % Đạt · Xếp hạng đội · Luỹ kế tháng và năm</div>
+				</div>
+			</div>
+
+			<!-- Year & view selector -->
+			<div class="d-flex flex-wrap gap-2 mb-3">
+				<select class="form-select form-select-sm w-auto" id="sel-year"></select>
+				<div class="btn-group btn-group-sm" role="group">
+					<input type="radio" class="btn-check" id="v-month" name="vmode" checked>
+					<label class="btn btn-outline-inverse" for="v-month">Theo tháng</label>
+					<input type="radio" class="btn-check" id="v-year" name="vmode">
+					<label class="btn btn-outline-inverse" for="v-year">Theo năm</label>
+				</div>
+				<div class="ms-auto d-flex gap-2">
+					<button class="btn btn-sm btn-outline-inverse"><i class="bi bi-file-earmark-excel me-1"></i>Xuất báo cáo</button>
+					<button class="btn btn-sm btn-outline-inverse"><i class="bi bi-printer me-1"></i>In</button>
+				</div>
+			</div>
+
+			<!-- Nhóm: Kế hoạch -->
+			<div class="small fw-bold text-inverse text-opacity-40 mb-1 ps-1">KẾ HOẠCH</div>
+			<div class="row g-2 mb-2">
+				<div class="col-lg-4 col-md-4 col-6">
+					<div class="ksl-kpi">
+						<div class="lbl">Kế hoạch năm gốc</div>
+						<div class="val" id="k-base">—</div>
+						<div class="sub" id="k-base-sub">—</div>
+					</div>
+				</div>
+				<div class="col-lg-4 col-md-4 col-6">
+					<div class="ksl-kpi accent-theme">
+						<div class="lbl">Kế hoạch hiệu lực <span class="text-inverse text-opacity-40 fw-normal">(gốc + bổ sung)</span></div>
+						<div class="val" id="k-effective">—</div>
+						<div class="sub" id="k-effective-sub">—</div>
+					</div>
+				</div>
+				<div class="col-lg-4 col-md-4 col-6">
+					<div class="ksl-kpi accent-theme">
+						<div class="lbl">Tổng chỉ tiêu <span class="text-inverse text-opacity-40 fw-normal">(hiệu lực + phấn đấu)</span></div>
+						<div class="val" id="k-total-target">—</div>
+						<div class="sub" id="k-total-target-sub">—</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Nhóm: Thực hiện -->
+			<div class="small fw-bold text-inverse text-opacity-40 mb-1 ps-1">THỰC HIỆN</div>
+			<div class="row g-2 mb-3">
+				<div class="col-lg-6 col-md-6 col-6">
+					<div class="ksl-kpi accent-info">
+						<div class="lbl">Luỹ kế thực hiện</div>
+						<div class="val" id="k-actual">—</div>
+						<div class="sub" id="k-actual-sub">—</div>
+					</div>
+				</div>
+				<div class="col-lg-6 col-md-6 col-6">
+					<div class="ksl-kpi accent-warn">
+						<div class="lbl">% đạt so với kế hoạch hiệu lực</div>
+						<div class="val" id="k-pct">—<span class="unit">%</span></div>
+						<div class="sub" id="k-pct-sub">—</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Chart row -->
+			<div class="row mb-3">
+				<div class="col-lg-8 mb-3">
+					<div class="card h-100">
+						<div class="card-body">
+							<div class="d-flex align-items-center mb-3">
+								<h5 class="fw-bold mb-0 flex-1"><i class="bi bi-graph-up me-2 text-theme"></i>Lũy kế 12 tháng</h5>
+								<span class="small text-inverse text-opacity-50">Kế hoạch gốc · Kế hoạch hiệu lực · Thực hiện</span>
+							</div>
+							<div id="chart-cumulative" style="height:320px;"></div>
+						</div>
+						<div class="card-arrow">
+							<div class="card-arrow-top-left"></div><div class="card-arrow-top-right"></div>
+							<div class="card-arrow-bottom-left"></div><div class="card-arrow-bottom-right"></div>
+						</div>
+					</div>
+				</div>
+				<div class="col-lg-4 mb-3">
+					<div class="card h-100">
+						<div class="card-body">
+							<h5 class="fw-bold mb-3"><i class="bi bi-trophy-fill me-2 text-warning"></i>Xếp hạng Đội <span class="small text-inverse text-opacity-50">(theo % đạt)</span></h5>
+							<div id="rank-list"></div>
+						</div>
+						<div class="card-arrow">
+							<div class="card-arrow-top-left"></div><div class="card-arrow-top-right"></div>
+							<div class="card-arrow-bottom-left"></div><div class="card-arrow-bottom-right"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 2 bảng: theo tháng & theo năm -->
+			<div class="row">
+				<div class="col-lg-12 mb-3">
+					<div class="card">
+						<div class="card-body">
+							<div class="d-flex align-items-center mb-2 flex-wrap gap-2">
+								<h5 class="fw-bold mb-0 flex-1"><i class="bi bi-calendar3 me-2 text-theme"></i>Bảng so sánh kế hoạch với thực hiện — <span id="tbl-title">Theo tháng</span></h5>
+								<div class="d-flex align-items-center gap-2">
+									<span class="small text-inverse text-opacity-50">Đỏ: &lt;85% · Vàng: 85-99% · Xanh: ≥100%</span>
+									<style>
+									@keyframes ksl-pulse {
+										0%   { box-shadow: 0 0 0 0 rgba(var(--bs-theme-rgb), 0.5); transform: scale(1); }
+										50%  { box-shadow: 0 0 0 6px rgba(var(--bs-theme-rgb), 0); transform: scale(1.04); }
+										100% { box-shadow: 0 0 0 0 rgba(var(--bs-theme-rgb), 0); transform: scale(1); }
+									}
+									#btn-toggle-legend.ksl-animated {
+										animation: ksl-pulse 1.8s ease-in-out infinite;
+										border-color: var(--bs-theme);
+										color: var(--bs-theme);
+									}
+									</style>
+									<button class="btn btn-sm btn-outline-inverse ksl-animated" id="btn-toggle-legend" style="font-size:11px;padding:2px 10px;">
+										<i class="bi bi-info-circle me-1"></i>Chú thích cột
+									</button>
+								</div>
+							</div>
+
+							<!-- Chú thích cột (ẩn/hiện) -->
+							<div id="col-legend" style="display:none;" class="mb-3">
+								<div class="row g-2">
+									<div class="col-md-4 col-sm-6">
+										<div class="p-2 rounded-2" style="background:rgba(var(--bs-inverse-rgb),0.04);border:1px solid rgba(var(--bs-inverse-rgb),0.08);">
+											<div class="small fw-bold text-theme mb-1">Kế hoạch gốc</div>
+											<div class="small text-inverse text-opacity-70">KH năm gốc × % tháng từ bảng phân bổ. Tháng 2, 3 = 0 (mùa rụng lá).</div>
+										</div>
+									</div>
+									<div class="col-md-4 col-sm-6">
+										<div class="p-2 rounded-2" style="background:rgba(var(--bs-inverse-rgb),0.04);border:1px solid rgba(var(--bs-inverse-rgb),0.08);">
+											<div class="small fw-bold text-info mb-1">Bổ sung</div>
+											<div class="small text-inverse text-opacity-70">Phần khoán bổ sung từ Tập đoàn, phân vào tháng theo cùng tỷ lệ %.</div>
+										</div>
+									</div>
+									<div class="col-md-4 col-sm-6">
+										<div class="p-2 rounded-2" style="background:rgba(var(--bs-inverse-rgb),0.04);border:1px solid rgba(var(--bs-inverse-rgb),0.08);">
+											<div class="small fw-bold text-inverse mb-1">Kế hoạch hiệu lực</div>
+											<div class="small text-inverse text-opacity-70">= Kế hoạch gốc + Bổ sung. Đây là chỉ tiêu chính thức của tháng.</div>
+										</div>
+									</div>
+									<div class="col-md-4 col-sm-6">
+										<div class="p-2 rounded-2" style="background:rgba(var(--bs-inverse-rgb),0.04);border:1px solid rgba(var(--bs-inverse-rgb),0.08);">
+											<div class="small fw-bold text-inverse mb-1">Thực hiện</div>
+											<div class="small text-inverse text-opacity-70">Sản lượng thực tế ghi nhận trong tháng. Tháng chưa kết thúc hiển thị "—".</div>
+										</div>
+									</div>
+									<div class="col-md-4 col-sm-6">
+										<div class="p-2 rounded-2" style="background:rgba(var(--bs-inverse-rgb),0.04);border:1px solid rgba(var(--bs-inverse-rgb),0.08);">
+											<div class="small fw-bold text-warning mb-1">% Đạt</div>
+											<div class="small text-inverse text-opacity-70">= Thực hiện ÷ Kế hoạch hiệu lực × 100. Đỏ &lt;85%, Vàng 85–99%, Xanh ≥100%.</div>
+										</div>
+									</div>
+									<div class="col-md-4 col-sm-6">
+										<div class="p-2 rounded-2" style="background:rgba(var(--bs-inverse-rgb),0.04);border:1px solid rgba(var(--bs-inverse-rgb),0.08);">
+											<div class="small fw-bold text-inverse mb-1">Luỹ kế kế hoạch</div>
+											<div class="small text-inverse text-opacity-70">Tổng cộng dồn kế hoạch gốc từ đầu năm đến tháng đó.</div>
+										</div>
+									</div>
+									<div class="col-md-4 col-sm-6">
+										<div class="p-2 rounded-2" style="background:rgba(var(--bs-inverse-rgb),0.04);border:1px solid rgba(var(--bs-inverse-rgb),0.08);">
+											<div class="small fw-bold text-info mb-1">Luỹ kế thực hiện</div>
+											<div class="small text-inverse text-opacity-70">Tổng cộng dồn thực tế từ đầu năm. Đứng yên khi chưa có thực hiện của tháng tiếp theo.</div>
+										</div>
+									</div>
+									<div class="col-md-4 col-sm-6">
+										<div class="p-2 rounded-2" style="background:rgba(var(--bs-inverse-rgb),0.04);border:1px solid rgba(var(--bs-inverse-rgb),0.08);">
+											<div class="small fw-bold text-warning mb-1">% Luỹ kế</div>
+											<div class="small text-inverse text-opacity-70">= Luỹ kế thực hiện ÷ Luỹ kế kế hoạch × 100. Giảm dần ở tháng tương lai vì tử số đứng yên trong khi mẫu số tăng — bình thường.</div>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="table-responsive">
+								<table class="table table-ksl align-middle mb-0" id="tbl-compare"></table>
+							</div>
+
+							<script>
+							document.getElementById('btn-toggle-legend').addEventListener('click', function() {
+								const el = document.getElementById('col-legend');
+								const isOpen = el.style.display !== 'none';
+								el.style.display = isOpen ? 'none' : '';
+								if (isOpen) {
+									this.classList.add('ksl-animated');
+									this.innerHTML = '<i class="bi bi-info-circle me-1"></i>Chú thích cột';
+								} else {
+									this.classList.remove('ksl-animated');
+									this.innerHTML = '<i class="bi bi-x-circle me-1"></i>Đóng chú thích';
+								}
+							});
+							</script>
+						</div>
+						<div class="card-arrow">
+							<div class="card-arrow-top-left"></div><div class="card-arrow-top-right"></div>
+							<div class="card-arrow-bottom-left"></div><div class="card-arrow-bottom-right"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Cảnh báo -->
+			<div class="row">
+				<div class="col-lg-12 mb-3">
+					<div class="card">
+						<div class="card-body">
+							<h5 class="fw-bold mb-3"><i class="bi bi-bell-fill me-2 text-warning"></i>Cảnh báo & giám sát</h5>
+							<div id="alert-list"></div>
+						</div>
+						<div class="card-arrow">
+							<div class="card-arrow-top-left"></div><div class="card-arrow-top-right"></div>
+							<div class="card-arrow-bottom-left"></div><div class="card-arrow-bottom-right"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	<script src="_data.js"></script>
+	<script src="_shell.js"></script>
+	<script>Shell.render({ activePageId: 'cty-3-1' });</script>
+
+	<script src="../hud_admin_v2.3/template_html/dist/assets/js/vendor.min.js"></script>
+	<script src="../hud_admin_v2.3/template_html/dist/assets/js/app.min.js"></script>
+	<script src="../hud_admin_v2.3/template_html/dist/assets/plugins/apexcharts/dist/apexcharts.min.js"></script>
+
+	<script>
+	(function () {
+		const state = Shell.getState();
+		const company = KSL_DATA.getCompany(state.companyId);
+		const D = KSL_DATA;
+
+		const years = Object.keys(company.plans).map(Number).sort((a,b)=>b-a);
+		document.getElementById('sel-year').innerHTML = years.map(y => `<option value="${y}" ${y === D.currentYear ? 'selected' : ''}>Năm ${y}</option>`).join('');
+
+		let currentView = 'month';
+		document.getElementById('v-month').addEventListener('change', () => { currentView = 'month'; render(); });
+		document.getElementById('v-year').addEventListener('change', () => { currentView = 'year'; render(); });
+		document.getElementById('sel-year').addEventListener('change', render);
+
+		let chart = null;
+
+		function render() {
+			const year = parseInt(document.getElementById('sel-year').value, 10);
+			const kp = company.plans[year];
+			const supp = (company.supplementary || []).filter(s => s.date.startsWith(String(year))).reduce((s, x) => s + x.kg, 0);
+			const strive = company.strivePlans[year] ? company.strivePlans[year].total : 0;
+			const effective = kp.total + supp;
+
+			// Monthly data
+			const monthly = D.mockMonthlyActual(kp.total, D.DEFAULT_MONTH_PERCENT);
+			const done = monthly.reduce((s, m) => s + m.actual, 0);
+			const pct = done / effective * 100;
+
+			const curM = year === D.currentYear ? D.currentMonth : 12;
+			document.getElementById('k-base').innerHTML = D.fmtNum(kp.total) + '<span class="unit">kg</span>';
+			document.getElementById('k-base-sub').textContent = D.fmtTon(kp.total);
+			document.getElementById('k-effective').innerHTML = D.fmtNum(effective) + '<span class="unit">kg</span>';
+			document.getElementById('k-effective-sub').textContent = supp ? `Gốc + bổ sung ${D.fmtTon(supp)}` : 'Chưa có bổ sung';
+			document.getElementById('k-total-target').innerHTML = D.fmtNum(effective + strive) + '<span class="unit">kg</span>';
+			document.getElementById('k-total-target-sub').textContent = strive ? `Hiệu lực + phấn đấu ${D.fmtTon(strive)}` : 'Chưa có phấn đấu';
+			document.getElementById('k-actual').innerHTML = D.fmtNum(done) + '<span class="unit">kg</span>';
+			document.getElementById('k-actual-sub').textContent = (done / effective * 100).toFixed(1) + '% kế hoạch hiệu lực';
+			document.getElementById('k-pct').innerHTML = pct.toFixed(1) + '<span class="unit">%</span>';
+			document.getElementById('k-pct-sub').textContent = pct >= 100 ? 'Đạt và vượt' : (pct >= 85 ? 'Gần đạt' : 'Đang hụt');
+
+			// Chart
+			if (chart) { chart.destroy(); chart = null; }
+			const cumPlan = []; let cp = 0;
+			monthly.forEach(m => { cp += m.plan; cumPlan.push(cp); });
+			const cumEff = cumPlan.map(v => Math.round(v * (effective/kp.total)));
+			const cumActual = []; let ca = 0;
+			monthly.forEach((m, i) => {
+				if (year < D.currentYear || (year === D.currentYear && i < curM)) {
+					ca += m.actual;
+					cumActual.push(ca);
+				}
+			});
+			chart = new ApexCharts(document.getElementById('chart-cumulative'), {
+				chart: { type: 'line', height: 320, toolbar: { show: false }, zoom: { enabled: false }, background: 'transparent' },
+				theme: { mode: 'dark' },
+				colors: ['#6c757d', getComputedStyle(document.body).getPropertyValue('--bs-theme') || '#3cd2a5', '#5bc0de'],
+				series: [
+					{ name: 'Kế hoạch gốc (lũy kế)', data: cumPlan, type: 'line' },
+					{ name: 'Kế hoạch hiệu lực (gốc + bổ sung)', data: cumEff, type: 'line' },
+					{ name: 'Thực hiện (lũy kế)', data: cumActual, type: 'area' }
+				],
+				stroke: { curve: 'smooth', width: [2, 2, 3], dashArray: [6, 0, 0] },
+				xaxis: { categories: D.MONTHS_SHORT },
+				yaxis: { labels: { formatter: v => D.fmtNum(v) } },
+				dataLabels: { enabled: false },
+				fill: { type: ['solid','solid','gradient'], gradient: { opacityFrom: 0.3, opacityTo: 0 } },
+				legend: { position: 'top' },
+				tooltip: { y: { formatter: v => D.fmtKg(v) } },
+				grid: { borderColor: 'rgba(255,255,255,0.08)' }
+			});
+			chart.render();
+
+			// Ranking
+			const teams = company.teams;
+			const teamData = teams.map((t, i) => {
+				const tplan = Math.round(kp.total / teams.length * (0.9 + i * 0.1));
+				const tpct = 78 + (i * 9 + t.name.length * 3) % 40;
+				return { t, plan: tplan, actual: Math.round(tplan * tpct/100), pct: tpct };
+			}).sort((a,b) => b.pct - a.pct);
+			const rankBox = document.getElementById('rank-list');
+			rankBox.innerHTML = teamData.map((x, i) => {
+				const rnkCls = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+				const pctCls = x.pct >= 100 ? 'text-success' : x.pct >= 90 ? 'text-warning' : 'text-danger';
+				return `<div class="ksl-rank-row">
+					<div class="rnk ${rnkCls}">${i+1}</div>
+					<div class="flex-1">
+						<div class="fw-bold">${x.t.name}</div>
+						<div class="small text-inverse text-opacity-60">${D.fmtKg(x.actual)} / ${D.fmtKg(x.plan)}</div>
+					</div>
+					<div class="text-end">
+						<div class="fw-bold ${pctCls}">${x.pct}%</div>
+					</div>
+				</div>`;
+			}).join('');
+
+			// Bảng theo tháng / theo năm
+			renderCompareTable(year, kp, effective, monthly, teamData);
+
+			// Alerts
+			renderAlerts(year, monthly, teamData);
+		}
+
+		function renderCompareTable(year, kp, effective, monthly, teamData) {
+			const isMonth = currentView === 'month';
+			document.getElementById('tbl-title').textContent = isMonth ? 'Theo tháng (' + year + ')' : 'Theo năm (so với năm trước)';
+			const tbl = document.getElementById('tbl-compare');
+			if (isMonth) {
+				tbl.innerHTML = `
+					<thead><tr>
+						<th>Tháng</th>
+						<th class="text-end">Kế hoạch gốc (kg)</th>
+						<th class="text-end">Bổ sung</th>
+						<th class="text-end">Kế hoạch hiệu lực</th>
+						<th class="text-end">Thực hiện</th>
+						<th class="text-end">% đạt</th>
+						<th class="text-end">Luỹ kế kế hoạch</th>
+						<th class="text-end">Luỹ kế thực hiện</th>
+						<th class="text-end">% lũy kế</th>
+					</tr></thead>
+					<tbody>
+					${monthly.map((m, i) => {
+						const eff = Math.round(m.plan * (effective/kp.total));
+						const pct = m.actual ? (m.actual / eff * 100) : null;
+						const cumP = monthly.slice(0, i+1).reduce((s,x)=>s+x.plan,0);
+						const cumE = monthly.slice(0, i+1).reduce((s,x)=>s+Math.round(x.plan * (effective/kp.total)),0);
+						const cumA = monthly.slice(0, i+1).reduce((s,x)=>s+x.actual,0);
+						const cumP2 = cumA / cumE * 100;
+						const pctCls = !pct ? '' : pct >= 100 ? 'text-success' : pct >= 85 ? 'text-warning' : 'text-danger';
+						const cumCls = cumP2 >= 100 ? 'text-success' : cumP2 >= 85 ? 'text-warning' : 'text-danger';
+						return `<tr>
+							<td><strong>${D.MONTHS_VN[i]}</strong></td>
+							<td class="text-end">${D.fmtNum(m.plan)}</td>
+							<td class="text-end text-info">${D.fmtNum(eff - m.plan) || '—'}</td>
+							<td class="text-end fw-bold">${D.fmtNum(eff)}</td>
+							<td class="text-end">${m.actual ? D.fmtNum(m.actual) : '<span class="text-inverse text-opacity-40">—</span>'}</td>
+							<td class="text-end fw-bold ${pctCls}">${pct ? pct.toFixed(1)+'%' : '—'}</td>
+							<td class="text-end">${D.fmtNum(cumP)}</td>
+							<td class="text-end">${D.fmtNum(cumA)}</td>
+							<td class="text-end fw-bold ${cumCls}">${(cumP2 || 0).toFixed(1)}%</td>
+						</tr>`;
+					}).join('')}
+					</tbody>`;
+			} else {
+				// Theo năm
+				tbl.innerHTML = `
+					<thead><tr>
+						<th>Năm</th>
+						<th class="text-end">Kế hoạch gốc</th>
+						<th class="text-end">Bổ sung</th>
+						<th class="text-end">Phấn đấu</th>
+						<th class="text-end">Kế hoạch hiệu lực</th>
+						<th class="text-end">Thực hiện</th>
+						<th class="text-end">% đạt</th>
+						<th class="text-end">So với năm trước</th>
+					</tr></thead>
+					<tbody>
+					${Object.keys(company.plans).map(Number).sort().map(y => {
+						const p = company.plans[y];
+						const sup = (company.supplementary || []).filter(s => s.date.startsWith(String(y))).reduce((s,x)=>s+x.kg,0);
+						const sv = company.strivePlans[y] ? company.strivePlans[y].total : 0;
+						const eff = p.total + sup;
+						const monthly = D.mockMonthlyActual(p.total, D.DEFAULT_MONTH_PERCENT);
+						const actual = y < D.currentYear ? monthly.reduce((s,m)=>s+m.actual,0)
+									: y === D.currentYear ? monthly.slice(0, D.currentMonth).reduce((s,m)=>s+m.actual,0) : 0;
+						const pct = actual ? actual / eff * 100 : 0;
+						const pctCls = pct >= 100 ? 'text-success' : pct >= 85 ? 'text-warning' : pct ? 'text-danger' : '';
+						const prevY = company.plans[y-1];
+						const prevActual = prevY ? D.mockMonthlyActual(prevY.total, D.DEFAULT_MONTH_PERCENT).reduce((s,m)=>s+m.actual,0) : 0;
+						const yoy = prevActual ? ((actual - prevActual) / prevActual * 100) : null;
+						return `<tr>
+							<td><strong>${y}</strong></td>
+							<td class="text-end">${D.fmtNum(p.total)}</td>
+							<td class="text-end text-info">${sup ? '+' + D.fmtNum(sup) : '—'}</td>
+							<td class="text-end">${sv ? '+' + D.fmtNum(sv) : '—'}</td>
+							<td class="text-end fw-bold">${D.fmtNum(eff)}</td>
+							<td class="text-end">${actual ? D.fmtNum(actual) : '—'}</td>
+							<td class="text-end fw-bold ${pctCls}">${pct ? pct.toFixed(1)+'%' : '—'}</td>
+							<td class="text-end ${yoy == null ? '' : (yoy >= 0 ? 'text-success' : 'text-danger')}">${yoy == null ? '—' : (yoy >= 0 ? '+' : '') + yoy.toFixed(1) + '%'}</td>
+						</tr>`;
+					}).join('')}
+					</tbody>`;
+			}
+		}
+
+		function renderAlerts(year, monthly, teamData) {
+			const al = document.getElementById('alert-list');
+			const alerts = [];
+			const lowTeams = teamData.filter(x => x.pct < 85);
+			lowTeams.forEach(x => alerts.push({ lvl: 'danger', icon: 'bi-exclamation-triangle-fill', msg: `<strong>${x.t.name}</strong> chỉ đạt ${x.pct}% kế hoạch — cần đánh giá nguyên nhân` }));
+			const warnTeams = teamData.filter(x => x.pct >= 85 && x.pct < 95);
+			warnTeams.forEach(x => alerts.push({ lvl: 'warning', icon: 'bi-exclamation-circle', msg: `<strong>${x.t.name}</strong> đạt ${x.pct}% kế hoạch — theo dõi sát` }));
+			// Tháng hụt
+			const curM = year === D.currentYear ? D.currentMonth : 12;
+			monthly.slice(0, curM).forEach((m, i) => {
+				if (m.actual && m.plan && m.actual / m.plan < 0.85) {
+					alerts.push({ lvl: 'warning', icon: 'bi-calendar-x', msg: `Tháng ${i+1}/${year} chỉ đạt ${(m.actual/m.plan*100).toFixed(0)}% kế hoạch — đã được điều chỉnh % qua phiên bản mới` });
+				}
+			});
+			if (!alerts.length) alerts.push({ lvl: 'success', icon: 'bi-check-circle-fill', msg: 'Không có cảnh báo — tình hình đang ổn định' });
+			al.innerHTML = alerts.map(a => `<div class="d-flex align-items-start gap-2 p-2 mb-1 rounded-3" style="background:rgba(var(--bs-${a.lvl}-rgb),0.08);border-left:3px solid var(--bs-${a.lvl});">
+				<i class="bi ${a.icon} text-${a.lvl} mt-1"></i><div class="flex-1 small">${a.msg}</div>
+			</div>`).join('');
+		}
+
+		render();
+	})();
+	</script>
+</body>
+</html>

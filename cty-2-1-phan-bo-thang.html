@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<title>Khoán sản lượng | 2.1 Phân bổ % tháng cho đội</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="../hud_admin_v2.3/template_html/dist/assets/css/vendor.min.css" rel="stylesheet">
+	<link href="../hud_admin_v2.3/template_html/dist/assets/css/app.min.css" rel="stylesheet">
+	<link href="_app.css" rel="stylesheet">
+</head>
+<body>
+	<div id="app" class="app">
+		<div id="content" class="app-content">
+
+			<div class="ksl-page-header">
+				<div class="page-icon"><i class="bi bi-calendar3"></i></div>
+				<div>
+					<h1>Phân bổ % tháng cho đội</h1>
+					<div class="subtitle">Cấp Công ty · Lưới 12 tháng × Đội · Tháng đã qua và tháng hiện tại bị <strong>khoá</strong> — chỉ sửa từ tháng kế tiếp, mỗi lần điều chỉnh tạo <strong>phiên bản mới</strong></div>
+				</div>
+			</div>
+
+			<!-- LIST các lần phân bổ theo năm -->
+			<div class="card mb-3">
+				<div class="card-body">
+					<div class="d-flex align-items-center mb-3 flex-wrap gap-2">
+						<h5 class="fw-bold mb-0 flex-1"><i class="bi bi-collection me-2 text-theme"></i>Danh sách phân bổ % tháng theo năm</h5>
+						<button class="btn btn-outline-theme btn-sm" id="btn-create-next">
+							<i class="bi bi-plus-lg me-1"></i>Tạo phân bổ cho năm <span id="next-year-label"></span>
+						</button>
+					</div>
+					<div class="table-responsive">
+						<table class="table table-hover table-ksl align-middle mb-0">
+							<thead>
+								<tr>
+									<th style="width:12%">Năm</th>
+									<th>Kế hoạch khoán năm (chốt)</th>
+									<th>Phiên bản mới nhất</th>
+									<th>Cập nhật gần nhất</th>
+									<th>Lý do</th>
+									<th style="width:160px"></th>
+								</tr>
+							</thead>
+							<tbody id="alloc-list-tbody"></tbody>
+						</table>
+					</div>
+				</div>
+				<div class="card-arrow">
+					<div class="card-arrow-top-left"></div><div class="card-arrow-top-right"></div>
+					<div class="card-arrow-bottom-left"></div><div class="card-arrow-bottom-right"></div>
+				</div>
+			</div>
+
+			<!-- DETAIL matrix -->
+			<div class="card mb-3" id="detail-card" style="display:none;">
+				<div class="card-body">
+					<div class="d-flex flex-wrap align-items-start mb-3 gap-2">
+						<div class="flex-1">
+							<div class="small text-inverse text-opacity-50 mb-1">CHI TIẾT PHÂN BỔ % THÁNG</div>
+							<div class="d-flex align-items-center gap-3 flex-wrap">
+								<h3 class="fw-bold mb-0" id="detail-year-title">—</h3>
+								<span class="ksl-version-pill" id="version-badge" style="display:none;"><i class="bi bi-git"></i>Phiên bản <span id="cur-version">1</span></span>
+								<span class="small text-inverse text-opacity-60" id="detail-meta"></span>
+							</div>
+						</div>
+						<div class="d-flex align-items-center gap-2 flex-wrap">
+							<select class="form-select form-select-sm w-auto" id="sel-version" style="display:none;"></select>
+							<div class="d-flex gap-2" id="detail-actions"></div>
+						</div>
+					</div>
+
+					<div id="blocked-notice" class="ksl-note warn" style="display:none;">
+						<strong><i class="bi bi-exclamation-triangle me-1"></i>Không thể phân bổ cho năm này.</strong>
+						Cần <u>chốt Kế hoạch khoán năm</u> tương ứng trước (tab <em>1.1 Lên kế hoạch khoán</em>).
+					</div>
+
+					<div id="detail-body">
+						<!-- KPIs -->
+						<div class="row g-2 mb-3">
+							<div class="col-md-3 col-6">
+								<div class="ksl-kpi accent-theme">
+									<div class="lbl">Kế hoạch năm (gốc)</div>
+									<div class="val" id="k-base">—</div>
+									<div class="sub" id="k-base-sub">—</div>
+								</div>
+							</div>
+							<div class="col-md-3 col-6">
+								<div class="ksl-kpi accent-info">
+									<div class="lbl">Lũy kế thực hiện</div>
+									<div class="val" id="k-done">—</div>
+									<div class="sub" id="k-done-sub">—</div>
+								</div>
+							</div>
+							<div class="col-md-3 col-6">
+								<div class="ksl-kpi">
+									<div class="lbl">Còn lại</div>
+									<div class="val" id="k-left">—</div>
+									<div class="sub" id="k-left-sub">—</div>
+								</div>
+							</div>
+							<div class="col-md-3 col-6">
+								<div class="ksl-kpi accent-warn">
+									<div class="lbl">Tháng khoá / sửa được</div>
+									<div class="val"><span id="k-locked-cnt">—</span> / <span id="k-open-cnt">—</span></div>
+									<div class="sub">Tháng hiện tại là Tháng <span id="k-cur-month">—</span></div>
+								</div>
+							</div>
+						</div>
+
+						<!-- Ghi chú trạng thái -->
+						<div id="edit-hint" class="ksl-note mb-3" style="display:none;"></div>
+
+						<!-- Lý do (chỉ hiện khi chỉnh sửa) -->
+						<div id="reason-block" class="mb-3 p-3 rounded-3" style="display:none;background:rgba(var(--bs-warning-rgb),0.06);border:1px solid rgba(var(--bs-warning-rgb),0.2);">
+							<label class="form-label small fw-bold text-warning"><i class="bi bi-exclamation-circle me-1"></i>Lý do điều chỉnh <span class="text-danger">*</span></label>
+							<textarea class="form-control" id="edit-reason" rows="2" placeholder="Bắt buộc nhập lý do trước khi lưu — ví dụ: Tháng 3 hụt sản lượng, dồn sang T5-T8"></textarea>
+						</div>
+
+						<div class="d-flex mb-2 justify-content-end gap-2">
+							<button class="btn btn-sm btn-outline-inverse"><i class="bi bi-file-earmark-excel me-1"></i>Xuất Excel</button>
+							<button class="btn btn-sm btn-outline-inverse"><i class="bi bi-upload me-1"></i>Nhập từ Excel</button>
+						</div>
+
+						<div class="table-responsive">
+							<table class="ksl-monthly-grid w-100" id="matrix-table"></table>
+						</div>
+
+						<!-- Lịch sử phiên bản -->
+						<div class="mt-4" id="history-block" style="display:none;">
+							<h6 class="fw-bold mb-2"><i class="bi bi-clock-history me-1 text-theme"></i>Lịch sử phiên bản</h6>
+							<div id="version-history"></div>
+						</div>
+					</div>
+				</div>
+				<div class="card-arrow">
+					<div class="card-arrow-top-left"></div><div class="card-arrow-top-right"></div>
+					<div class="card-arrow-bottom-left"></div><div class="card-arrow-bottom-right"></div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	<script src="_data.js"></script>
+	<script src="_shell.js"></script>
+	<script>Shell.render({ activePageId: 'cty-2-1' });</script>
+
+	<script src="../hud_admin_v2.3/template_html/dist/assets/js/vendor.min.js"></script>
+	<script src="../hud_admin_v2.3/template_html/dist/assets/js/app.min.js"></script>
+
+	<script>
+	(function () {
+		const state = Shell.getState();
+		const company = KSL_DATA.getCompany(state.companyId);
+		const D = KSL_DATA;
+
+		document.getElementById('next-year-label').textContent = D.nextYear;
+
+		// Trạng thái hiện tại của detail đang mở
+		let currentYear = null;
+		let isEditing = false;
+
+		// Dữ liệu % đang nhập (mock, per team per month)
+		let draftPcts = {}; // { teamId: [12 số] }
+
+		// ==== List ====
+		const years = Object.keys(company.monthlyVersions).map(Number).sort((a,b)=>b-a);
+		Object.keys(company.plans).map(Number).forEach(y => {
+			if (!years.includes(y) && company.plans[y].status === 'locked') years.push(y);
+		});
+		years.sort((a,b)=>b-a);
+
+		function refreshList() {
+			document.getElementById('alloc-list-tbody').innerHTML = years.map(y => {
+				const versions = company.monthlyVersions[y] || [];
+				const latest = versions[versions.length - 1];
+				const kp = company.plans[y];
+				let actions;
+				if (versions.length) {
+					actions = `<button class="btn btn-sm btn-outline-theme" data-year="${y}"><i class="bi bi-pencil-square me-1"></i>Mở</button>`;
+				} else if (kp && kp.status === 'locked' && y >= D.currentYear) {
+					actions = `<button class="btn btn-sm btn-outline-theme" data-year="${y}"><i class="bi bi-plus me-1"></i>Tạo</button>`;
+				} else if (kp && kp.status === 'locked' && y < D.currentYear) {
+					actions = `<span class="small text-inverse text-opacity-50">Năm đã qua</span>`;
+				} else {
+					actions = `<span class="small text-inverse text-opacity-50">Cần chốt kế hoạch khoán trước</span>`;
+				}
+				return `<tr>
+					<td><strong class="fs-5">${y}</strong></td>
+					<td>${kp ? D.fmtKg(kp.total) : '—'}</td>
+					<td>${latest ? `<span class="ksl-version-pill"><i class="bi bi-git"></i>v${latest.v}</span>` : '<span class="ksl-status none">Chưa có</span>'}</td>
+					<td>${latest ? latest.createdAt : '—'}</td>
+					<td class="small text-inverse text-opacity-70">${latest ? latest.note : '—'}</td>
+					<td class="text-end">${actions}</td>
+				</tr>`;
+			}).join('');
+		}
+		refreshList();
+
+		document.getElementById('alloc-list-tbody').addEventListener('click', e => {
+			const btn = e.target.closest('button[data-year]');
+			if (btn) openDetail(parseInt(btn.dataset.year, 10));
+		});
+		document.getElementById('btn-create-next').addEventListener('click', () => openDetail(D.nextYear));
+
+		// ==== Detail ====
+		function openDetail(year) {
+			const kp = company.plans[year];
+			const versions = company.monthlyVersions[year] || [];
+			const hasData = versions.length > 0;
+
+			currentYear = year;
+			isEditing = false;
+
+			document.getElementById('detail-year-title').textContent = `Phân bổ % tháng năm ${year}`;
+			document.getElementById('detail-card').style.display = '';
+
+			const body = document.getElementById('detail-body');
+			const block = document.getElementById('blocked-notice');
+
+			if (!kp || kp.status !== 'locked') {
+				block.style.display = '';
+				body.style.display = 'none';
+				document.getElementById('detail-card').scrollIntoView({ behavior: 'smooth' });
+				return;
+			}
+			block.style.display = 'none';
+			body.style.display = '';
+
+			// KPIs
+			document.getElementById('k-base').innerHTML = D.fmtNum(kp.total) + '<span class="unit">kg</span>';
+			document.getElementById('k-base-sub').textContent = D.fmtTon(kp.total);
+			const curMonth = year === D.currentYear ? D.currentMonth : (year < D.currentYear ? 12 : 0);
+			document.getElementById('k-cur-month').textContent = curMonth || '—';
+			document.getElementById('k-locked-cnt').textContent = curMonth;
+			document.getElementById('k-open-cnt').textContent = 12 - curMonth;
+			const actual = D.mockMonthlyActual(kp.total, D.DEFAULT_MONTH_PERCENT);
+			const done = actual.slice(0, curMonth).reduce((s, a) => s + a.actual, 0);
+			document.getElementById('k-done').innerHTML = D.fmtNum(done) + '<span class="unit">kg</span>';
+			document.getElementById('k-done-sub').textContent = (done / kp.total * 100).toFixed(1) + '% kế hoạch năm';
+			document.getElementById('k-left').innerHTML = D.fmtNum(kp.total - done) + '<span class="unit">kg</span>';
+			document.getElementById('k-left-sub').textContent = ((kp.total - done) / kp.total * 100).toFixed(1) + '% còn lại';
+
+			if (!hasData) {
+				// Chưa có dữ liệu → khởi tạo draft trống
+				draftPcts = {};
+				company.teams.forEach(t => { draftPcts[t.id] = new Array(12).fill(0); });
+				renderEmpty(year, kp, curMonth);
+			} else {
+				renderView(year, kp, curMonth, versions);
+			}
+
+			document.getElementById('detail-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+		}
+
+		// ---- Trạng thái: chưa có dữ liệu (nhập mới) ----
+		function renderEmpty(year, kp, curMonth) {
+			document.getElementById('sel-version').style.display = 'none';
+			document.getElementById('version-badge').style.display = 'none';
+			document.getElementById('detail-meta').textContent = 'Chưa có phân bổ — nhập % cho từng đội, tổng mỗi dòng phải = 100%';
+			document.getElementById('reason-block').style.display = 'none';
+			document.getElementById('history-block').style.display = 'none';
+			document.getElementById('edit-hint').className = 'ksl-note info mb-3';
+			document.getElementById('edit-hint').innerHTML = '<i class="bi bi-info-circle me-1"></i>Nhập % cho 12 tháng của mỗi đội. Tổng mỗi dòng phải đúng <strong>100%</strong> thì mới cho phép lưu.';
+			document.getElementById('edit-hint').style.display = '';
+
+			const btnSave = document.createElement('button');
+			btnSave.className = 'btn btn-theme btn-sm';
+			btnSave.id = 'btn-do-save';
+			btnSave.disabled = true;
+			btnSave.innerHTML = '<i class="bi bi-save me-1"></i>Lưu phân bổ';
+			document.getElementById('detail-actions').innerHTML = '';
+			document.getElementById('detail-actions').appendChild(btnSave);
+
+			renderMatrix(year, kp, curMonth, true, false);
+			attachInputListeners(year, kp, curMonth, false);
+		}
+
+		// ---- Trạng thái: đã có dữ liệu, chỉ xem ----
+		function renderView(year, kp, curMonth, versions) {
+			const sel = document.getElementById('sel-version');
+			sel.style.display = '';
+			sel.innerHTML = versions.slice().reverse()
+				.map(v => `<option value="${v.v}">Phiên bản ${v.v} · ${v.createdAt}</option>`).join('');
+
+			function showVersion(vNum) {
+				const v = versions.find(x => x.v === vNum) || versions[versions.length - 1];
+				document.getElementById('version-badge').style.display = '';
+				document.getElementById('cur-version').textContent = v.v;
+				document.getElementById('detail-meta').innerHTML = `${v.createdBy} · ${v.createdAt} · <em>${v.note}</em>`;
+			}
+			showVersion(versions[versions.length - 1].v);
+
+			sel.onchange = () => showVersion(parseInt(sel.value));
+
+			document.getElementById('reason-block').style.display = 'none';
+			document.getElementById('edit-hint').style.display = 'none';
+
+			document.getElementById('detail-actions').innerHTML = `
+				<button class="btn btn-outline-inverse btn-sm" id="btn-start-edit">
+					<i class="bi bi-pencil me-1"></i>Chỉnh sửa
+				</button>`;
+			document.getElementById('btn-start-edit').addEventListener('click', () => {
+				renderEditMode(year, kp, curMonth, versions);
+			});
+
+			renderMatrix(year, kp, curMonth, false, false);
+			renderHistory(versions);
+		}
+
+		// ---- Trạng thái: đang chỉnh sửa ----
+		function renderEditMode(year, kp, curMonth, versions) {
+			isEditing = true;
+			const latest = versions[versions.length - 1];
+			document.getElementById('sel-version').style.display = 'none';
+			document.getElementById('version-badge').style.display = '';
+			document.getElementById('cur-version').textContent = latest.v;
+			document.getElementById('detail-meta').innerHTML = `Đang chỉnh sửa — sẽ tạo Phiên bản ${latest.v + 1}`;
+
+			document.getElementById('reason-block').style.display = '';
+			document.getElementById('edit-hint').className = 'ksl-note warn mb-3';
+			document.getElementById('edit-hint').innerHTML = '<i class="bi bi-exclamation-circle me-1"></i>Chỉ các tháng từ <strong>Tháng ' + (curMonth + 1) + '</strong> trở đi mới chỉnh được. Tổng mỗi dòng phải = 100% và bắt buộc nhập lý do trước khi lưu.';
+			document.getElementById('edit-hint').style.display = '';
+
+			const btnSave = `<button class="btn btn-theme btn-sm" id="btn-do-save" disabled><i class="bi bi-save me-1"></i>Lưu thay đổi</button>`;
+			const btnCancel = `<button class="btn btn-outline-inverse btn-sm" id="btn-cancel-edit"><i class="bi bi-x me-1"></i>Huỷ</button>`;
+			document.getElementById('detail-actions').innerHTML = btnCancel + btnSave;
+			document.getElementById('btn-cancel-edit').addEventListener('click', () => {
+				isEditing = false;
+				renderView(year, kp, curMonth, versions);
+			});
+
+			// Khởi tạo draft từ dữ liệu hiện tại
+			draftPcts = {};
+			company.teams.forEach((t, ti) => {
+				draftPcts[t.id] = D.DEFAULT_MONTH_PERCENT.map((v, i) => {
+					const jitter = ((ti * 7 + i * 3) % 5) - 2;
+					return Math.max(0, v === 0 ? 0 : v + jitter);
+				});
+				// normalize
+				const sum = draftPcts[t.id].reduce((a,b)=>a+b,0);
+				draftPcts[t.id] = draftPcts[t.id].map(p => parseFloat((p/sum*100).toFixed(1)));
+			});
+
+			renderMatrix(year, kp, curMonth, true, true);
+			attachInputListeners(year, kp, curMonth, true);
+			renderHistory(versions);
+		}
+
+		// ---- Render bảng lưới ----
+		function renderMatrix(year, kp, curMonth, editable, lockPast) {
+			const teams = company.teams;
+			const months = D.MONTHS_SHORT;
+			const table = document.getElementById('matrix-table');
+
+			let html = '<thead><tr><th class="sticky-col">Đội</th>';
+			for (let m = 1; m <= 12; m++) {
+				const cls = m <= curMonth ? (m < curMonth ? 'month-past' : 'month-current') : 'month-future';
+				html += `<th class="${cls}">${months[m-1]}</th>`;
+			}
+			html += '<th>Tổng</th></tr></thead><tbody>';
+
+			let companyTotals = new Array(12).fill(0);
+
+			teams.forEach((t, ti) => {
+				// Lấy % từ draft hoặc sinh ngẫu nhiên nếu chưa có
+				if (!draftPcts[t.id]) {
+					const raw = D.DEFAULT_MONTH_PERCENT.map((v, i) => {
+						const jitter = ((ti * 7 + i * 3) % 5) - 2;
+						return Math.max(0, v === 0 ? 0 : v + jitter);
+					});
+					const sum = raw.reduce((a,b)=>a+b,0);
+					draftPcts[t.id] = raw.map(p => parseFloat((p/sum*100).toFixed(1)));
+				}
+				const pcts = draftPcts[t.id];
+				const sum = pcts.reduce((a,b)=>a+b,0);
+				const isValid = Math.abs(sum - 100) < 0.5;
+				const teamPlan = Math.round(kp.total * (1 / teams.length) * (0.9 + ti * 0.1));
+
+				html += `<tr data-team="${t.id}"><td class="sticky-col"><strong>${t.name}</strong><div class="small text-inverse text-opacity-50">${D.fmtKg(teamPlan)}</div></td>`;
+				pcts.forEach((p, i) => {
+					const m = i + 1;
+					const isPast = m <= curMonth;
+					const canEdit = editable && (!lockPast || !isPast);
+					const cls = m < curMonth ? 'month-past' : (m === curMonth ? 'month-current' : 'month-future');
+					const kg = Math.round(teamPlan * p / 100);
+					companyTotals[i] += kg;
+					let cell;
+					if (canEdit) {
+						cell = `<input type="number" step="0.1" min="0" max="100" value="${p}" data-team="${t.id}" data-month="${i}" class="pct-input fw-bold"/>
+						        <div class="small text-inverse text-opacity-50">${D.fmtNum(kg)}</div>`;
+					} else {
+						cell = `<span class="fw-bold">${p > 0 ? p : '—'}</span><div class="small text-inverse text-opacity-50">${p > 0 ? D.fmtNum(kg) : ''}</div>`;
+					}
+					html += `<td class="${cls}">${cell}</td>`;
+				});
+				const sumCls = isValid ? 'text-success' : 'text-danger fw-bold';
+				html += `<td class="${sumCls}" data-row-total="${t.id}">${sum.toFixed(1)}%</td></tr>`;
+			});
+
+			// Dòng tổng công ty
+			html += '<tr class="total-row"><td class="sticky-col">TỔNG CÔNG TY</td>';
+			let grand = 0;
+			companyTotals.forEach((v, i) => {
+				grand += v;
+				const m = i + 1;
+				const cls = m < curMonth ? 'month-past' : (m === curMonth ? 'month-current' : 'month-future');
+				html += `<td class="${cls}"><strong>${kp.total ? ((v/kp.total)*100).toFixed(1) + '%' : '—'}</strong><div class="small text-inverse text-opacity-50">${D.fmtNum(v)}</div></td>`;
+			});
+			html += `<td><strong>${D.fmtKg(grand)}</strong></td></tr></tbody>`;
+			table.innerHTML = html;
+		}
+
+		// ---- Lắng nghe input thay đổi ----
+		function attachInputListeners(year, kp, curMonth, isEditMode) {
+			const table = document.getElementById('matrix-table');
+			table.addEventListener('input', e => {
+				const inp = e.target.closest('.pct-input');
+				if (!inp) return;
+				const tid = inp.dataset.team;
+				const mi = parseInt(inp.dataset.month);
+				draftPcts[tid][mi] = parseFloat(inp.value) || 0;
+				// Cập nhật tổng dòng
+				const sum = draftPcts[tid].reduce((a,b)=>a+b,0);
+				const rowTotal = document.querySelector(`[data-row-total="${tid}"]`);
+				if (rowTotal) {
+					const valid = Math.abs(sum - 100) < 0.5;
+					rowTotal.textContent = sum.toFixed(1) + '%';
+					rowTotal.className = valid ? 'text-success' : 'text-danger fw-bold';
+				}
+				checkCanSave(isEditMode);
+			});
+		}
+
+		// ---- Kiểm tra tất cả dòng đều = 100% ----
+		function checkCanSave(isEditMode) {
+			const allValid = company.teams.every(t => {
+				const sum = (draftPcts[t.id] || []).reduce((a,b)=>a+b,0);
+				return Math.abs(sum - 100) < 0.5;
+			});
+			const reasonOk = !isEditMode || (document.getElementById('edit-reason')?.value?.trim().length > 0);
+			const btn = document.getElementById('btn-do-save');
+			if (btn) {
+				btn.disabled = !(allValid && reasonOk);
+				btn.onclick = allValid && reasonOk ? () => doSave(isEditMode) : null;
+			}
+		}
+
+		// Lắng nghe thay đổi lý do
+		document.addEventListener('input', e => {
+			if (e.target.id === 'edit-reason') checkCanSave(true);
+		});
+
+		// ---- Lưu (demo) ----
+		function doSave(isEditMode) {
+			const versions = company.monthlyVersions[currentYear] || [];
+			const newV = versions.length + 1;
+			const reason = isEditMode
+				? (document.getElementById('edit-reason')?.value?.trim() || 'Điều chỉnh')
+				: 'Phân bổ ban đầu';
+
+			const newEntry = { v: newV, createdAt: D.currentDate, createdBy: 'Nguyễn Văn Minh (Phòng Kỹ thuật)', note: reason };
+			if (!company.monthlyVersions[currentYear]) company.monthlyVersions[currentYear] = [];
+			company.monthlyVersions[currentYear].push(newEntry);
+
+			isEditing = false;
+			refreshList();
+			openDetail(currentYear);
+		}
+
+		// Auto open
+		if (years[0]) openDetail(years[0]);
+
+		function renderHistory(versions) {
+			document.getElementById('history-block').style.display = '';
+			document.getElementById('version-history').innerHTML = versions.slice().reverse().map(v => `
+				<div class="d-flex align-items-start gap-3 p-2 rounded-3 mb-2" style="background:rgba(var(--bs-inverse-rgb),0.03);border:1px solid rgba(var(--bs-inverse-rgb),0.06);">
+					<div class="ksl-version-pill"><i class="bi bi-git"></i>v${v.v}</div>
+					<div class="flex-1">
+						<div class="fw-bold">${v.note}</div>
+						<div class="small text-inverse text-opacity-60">${v.createdBy} · ${v.createdAt}</div>
+					</div>
+				</div>
+			`).join('');
+		}
+	})();
+	</script>
+</body>
+</html>

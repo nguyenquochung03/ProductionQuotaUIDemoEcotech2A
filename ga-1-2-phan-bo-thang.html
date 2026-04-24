@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<title>Khoán sản lượng | Ga 1.2 Phân bổ % tháng cho công nhân / phần cây</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="../hud_admin_v2.3/template_html/dist/assets/css/vendor.min.css" rel="stylesheet">
+	<link href="../hud_admin_v2.3/template_html/dist/assets/css/app.min.css" rel="stylesheet">
+	<link href="_app.css" rel="stylesheet">
+</head>
+<body>
+	<div id="app" class="app">
+		<div id="content" class="app-content">
+
+			<div class="ksl-page-header">
+				<div class="page-icon"><i class="bi bi-people"></i></div>
+				<div>
+					<h1>Phân bổ % tháng cho phần cây / công nhân</h1>
+					<div class="subtitle">Cấp Ga / Tổ · Lưới 12 tháng × Phần cây · <strong>Khoán gán cho phần cây, KHÔNG gán cho công nhân</strong> · Khoá tháng đã qua và tạo phiên bản mới</div>
+				</div>
+			</div>
+
+			<div class="ksl-note warn">
+				<i class="bi bi-info-circle me-1"></i><strong>Quy tắc quan trọng:</strong>
+				Khoán được gán cho <u>phần cây</u>. Khi công nhân nghỉ hoặc chuyển đi, phần cây vẫn giữ khoán cũ, công nhân mới tiếp nhận. Phần cây trống vẫn có khoán — không chỉnh về 0.
+			</div>
+
+			<!-- Thanh điều khiển -->
+			<div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+				<div class="me-2">
+					<div class="small text-inverse text-opacity-50">GA / TỔ HIỆN TẠI</div>
+					<div class="fw-bold fs-5" id="sta-name">—</div>
+				</div>
+				<select class="form-select form-select-sm w-auto" id="sel-year"></select>
+				<span class="ksl-version-pill" id="version-badge" style="display:none;"><i class="bi bi-git"></i>Phiên bản <span id="cur-version">1</span></span>
+				<span class="small text-inverse text-opacity-60" id="version-meta"></span>
+				<select class="form-select form-select-sm w-auto" id="sel-version" style="display:none;"></select>
+				<div class="ms-auto d-flex gap-2" id="detail-actions"></div>
+			</div>
+
+			<!-- KPIs -->
+			<div class="row g-2 mb-3">
+				<div class="col-md-3 col-6">
+					<div class="ksl-kpi accent-theme">
+						<div class="lbl">Kế hoạch năm Ga</div>
+						<div class="val" id="k-plan">—</div>
+						<div class="sub" id="k-plan-sub">—</div>
+					</div>
+				</div>
+				<div class="col-md-3 col-6">
+					<div class="ksl-kpi">
+						<div class="lbl">Số phần cây</div>
+						<div class="val" id="k-parts">—</div>
+						<div class="sub"><span id="k-parts-empty">0</span> phần trống</div>
+					</div>
+				</div>
+				<div class="col-md-3 col-6">
+					<div class="ksl-kpi accent-info">
+						<div class="lbl">Luỹ kế thực hiện</div>
+						<div class="val" id="k-done">—</div>
+						<div class="sub" id="k-done-sub">—</div>
+					</div>
+				</div>
+				<div class="col-md-3 col-6">
+					<div class="ksl-kpi accent-warn">
+						<div class="lbl">Tháng khoá / sửa được</div>
+						<div class="val"><span id="k-locked">—</span> / <span id="k-open">—</span></div>
+						<div class="sub">Tháng hiện tại là Tháng <span id="k-curm">—</span></div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Gợi ý trạng thái -->
+			<div id="edit-hint" class="ksl-note mb-3" style="display:none;"></div>
+
+			<!-- Lý do chỉnh sửa -->
+			<div id="reason-block" class="mb-3 p-3 rounded-3" style="display:none;background:rgba(var(--bs-warning-rgb),0.06);border:1px solid rgba(var(--bs-warning-rgb),0.2);">
+				<label class="form-label small fw-bold text-warning"><i class="bi bi-exclamation-circle me-1"></i>Lý do điều chỉnh <span class="text-danger">*</span></label>
+				<textarea class="form-control" id="edit-reason" rows="2" placeholder="Bắt buộc nhập lý do trước khi lưu — ví dụ: 1 công nhân nghỉ việc giữa tháng 4"></textarea>
+			</div>
+
+			<div class="card mb-3">
+				<div class="card-body">
+					<div class="d-flex align-items-center mb-3 justify-content-between">
+						<h5 class="fw-bold mb-0"><i class="bi bi-grid-3x3 me-2 text-theme"></i>Lưới phân bổ (Phần cây × 12 tháng)</h5>
+						<div class="d-flex gap-2">
+							<button class="btn btn-sm btn-outline-inverse"><i class="bi bi-file-earmark-excel me-1"></i>Xuất Excel</button>
+							<button class="btn btn-sm btn-outline-inverse"><i class="bi bi-upload me-1"></i>Nhập từ Excel</button>
+						</div>
+					</div>
+					<div class="table-responsive" style="max-height:600px;overflow:auto;">
+						<table class="ksl-monthly-grid w-100" id="matrix"></table>
+					</div>
+				</div>
+				<div class="card-arrow">
+					<div class="card-arrow-top-left"></div><div class="card-arrow-top-right"></div>
+					<div class="card-arrow-bottom-left"></div><div class="card-arrow-bottom-right"></div>
+				</div>
+			</div>
+
+			<div class="card mb-3" id="history-card" style="display:none;">
+				<div class="card-body">
+					<h5 class="fw-bold mb-3"><i class="bi bi-clock-history me-2 text-theme"></i>Lịch sử phiên bản</h5>
+					<div id="version-history"></div>
+				</div>
+				<div class="card-arrow">
+					<div class="card-arrow-top-left"></div><div class="card-arrow-top-right"></div>
+					<div class="card-arrow-bottom-left"></div><div class="card-arrow-bottom-right"></div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	<script src="_data.js"></script>
+	<script src="_shell.js"></script>
+	<script>Shell.render({ activePageId: 'ga-1-2', scope: 'ga' });</script>
+
+	<script src="../hud_admin_v2.3/template_html/dist/assets/js/vendor.min.js"></script>
+	<script src="../hud_admin_v2.3/template_html/dist/assets/js/app.min.js"></script>
+
+	<script>
+	(function () {
+		const state = Shell.getState();
+		const company = KSL_DATA.getCompany(state.companyId);
+		const D = KSL_DATA;
+		const WORKERS = [
+			'Nguyễn Văn An', 'Trần Thị Bình', 'Lê Văn Cường', 'Phạm Văn Dũng', 'Hoàng Thị Em',
+			'Võ Văn Phúc', 'Đặng Thị Giang', 'Bùi Văn Hải', 'Đỗ Thị Yến', 'Ngô Văn Kiên',
+			'Lý Văn Lâm', 'Mai Thị Mơ', 'Đinh Văn Nam', 'Phan Thị Oanh', 'Trịnh Văn Phong',
+			'Vũ Thị Quý', 'Đào Văn Rồng', 'Hồ Thị Sen', 'Tạ Văn Thắng', 'Chu Thị Uyên',
+			'Lương Văn Vinh', 'Dương Thị Xuân', 'Huỳnh Văn Yên', 'Cao Thị Zân', 'Tô Văn Bảo',
+			'Lê Thị Châu', 'Nguyễn Văn Đức', 'Trần Thị Hồng', 'Phạm Văn Khoa', 'Hoàng Thị Lan'
+		];
+
+		const stas = D.flatStations(company);
+		const sta = stas.find(s => s.id === state.stationId) || stas[0];
+		if (!sta) {
+			document.getElementById('content').innerHTML += '<div class="ksl-note warn">Không có Ga.</div>';
+			return;
+		}
+		document.getElementById('sta-name').textContent = sta.teamName + ' · ' + sta.name;
+
+		const years = Object.keys(company.plans).map(Number).sort((a,b)=>b-a);
+		const selYear = document.getElementById('sel-year');
+		selYear.innerHTML = years.map(y => `<option value="${y}" ${y === D.currentYear ? 'selected' : ''}>Năm ${y}</option>`).join('');
+		selYear.addEventListener('change', () => render(parseInt(selYear.value)));
+
+		let isEditing = false;
+		let draftPcts = {};
+
+		function buildParts(year) {
+			const parts = [];
+			(sta.lots || []).forEach(lot => {
+				for (let i = 1; i <= lot.parts; i++) {
+					const assigned = (lot.name.length * i) % 14 !== 13;
+					parts.push({
+						id: lot.id + '-p' + i,
+						lot, partNo: i,
+						workerName: WORKERS[(lot.name.length + i * 3) % WORKERS.length],
+						assigned
+					});
+				}
+			});
+			return parts;
+		}
+
+		function render(year) {
+			const kp = company.plans[year];
+			const versions = company.monthlyVersions[year] || [];
+			const hasData = versions.length > 0;
+			isEditing = false;
+
+			const allStas = D.flatStations(company);
+			const totalTrees = allStas.reduce((s, x) => s + (x.lots || []).reduce((a,l) => a + l.trees, 0), 0);
+			const staTrees = (sta.lots || []).reduce((a, l) => a + l.trees, 0);
+			const staPlan = Math.round(kp.total * (staTrees / totalTrees));
+			const curM = year === D.currentYear ? D.currentMonth : (year < D.currentYear ? 12 : 0);
+			const parts = buildParts(year);
+			const totalPartsTrees = parts.reduce((s, p) => s + Math.round(p.lot.trees / p.lot.parts), 0);
+
+			document.getElementById('k-plan').innerHTML = D.fmtNum(staPlan) + '<span class="unit">kg</span>';
+			document.getElementById('k-plan-sub').textContent = D.fmtTon(staPlan);
+			document.getElementById('k-parts').textContent = parts.length;
+			document.getElementById('k-parts-empty').textContent = parts.filter(p => !p.assigned).length;
+			const actual = D.mockMonthlyActual(staPlan, D.DEFAULT_MONTH_PERCENT);
+			const done = actual.slice(0, curM).reduce((s, a) => s + a.actual, 0);
+			document.getElementById('k-done').innerHTML = D.fmtNum(done) + '<span class="unit">kg</span>';
+			document.getElementById('k-done-sub').textContent = (done / staPlan * 100).toFixed(1) + '% kế hoạch năm';
+			document.getElementById('k-curm').textContent = curM || '—';
+			document.getElementById('k-locked').textContent = curM;
+			document.getElementById('k-open').textContent = 12 - curM;
+
+			if (!hasData) {
+				draftPcts = {};
+				parts.forEach(p => { draftPcts[p.id] = new Array(12).fill(0); });
+				renderEmpty(year, staPlan, parts, totalPartsTrees, curM);
+			} else {
+				renderView(year, staPlan, parts, totalPartsTrees, curM, versions);
+			}
+		}
+
+		function renderEmpty(year, staPlan, parts, totalPartsTrees, curM) {
+			document.getElementById('sel-version').style.display = 'none';
+			document.getElementById('version-badge').style.display = 'none';
+			document.getElementById('version-meta').textContent = 'Chưa có phân bổ — nhập % cho từng phần cây, tổng mỗi dòng phải = 100%';
+			document.getElementById('reason-block').style.display = 'none';
+			document.getElementById('edit-hint').className = 'ksl-note info mb-3';
+			document.getElementById('edit-hint').innerHTML = '<i class="bi bi-info-circle me-1"></i>Nhập % cho 12 tháng của mỗi phần cây. Tổng mỗi dòng phải đúng <strong>100%</strong> thì mới cho phép lưu.';
+			document.getElementById('edit-hint').style.display = '';
+			document.getElementById('history-card').style.display = 'none';
+
+			const btn = document.createElement('button');
+			btn.className = 'btn btn-theme btn-sm';
+			btn.id = 'btn-do-save';
+			btn.disabled = true;
+			btn.innerHTML = '<i class="bi bi-save me-1"></i>Lưu phân bổ';
+			document.getElementById('detail-actions').innerHTML = '';
+			document.getElementById('detail-actions').appendChild(btn);
+
+			renderMatrix(staPlan, parts, totalPartsTrees, curM, true, false);
+			attachListeners(year, staPlan, parts, totalPartsTrees, curM, false);
+		}
+
+		function renderView(year, staPlan, parts, totalPartsTrees, curM, versions) {
+			const sel = document.getElementById('sel-version');
+			sel.style.display = '';
+			sel.innerHTML = versions.slice().reverse()
+				.map(v => `<option value="${v.v}">Phiên bản ${v.v} · ${v.createdAt}</option>`).join('');
+
+			function showV(vNum) {
+				const v = versions.find(x => x.v === vNum) || versions[versions.length - 1];
+				document.getElementById('version-badge').style.display = '';
+				document.getElementById('cur-version').textContent = v.v;
+				document.getElementById('version-meta').innerHTML = `${v.createdBy} · ${v.createdAt} · <em>${v.note}</em>`;
+			}
+			showV(versions[versions.length - 1].v);
+			sel.onchange = () => showV(parseInt(sel.value));
+
+			document.getElementById('reason-block').style.display = 'none';
+			document.getElementById('edit-hint').style.display = 'none';
+			document.getElementById('detail-actions').innerHTML = `
+				<button class="btn btn-outline-inverse btn-sm" id="btn-start-edit">
+					<i class="bi bi-pencil me-1"></i>Chỉnh sửa
+				</button>`;
+			document.getElementById('btn-start-edit').addEventListener('click', () => {
+				renderEditMode(year, staPlan, parts, totalPartsTrees, curM, versions);
+			});
+
+			renderMatrix(staPlan, parts, totalPartsTrees, curM, false, false);
+			renderHistory(versions);
+		}
+
+		function renderEditMode(year, staPlan, parts, totalPartsTrees, curM, versions) {
+			isEditing = true;
+			const latest = versions[versions.length - 1];
+			document.getElementById('sel-version').style.display = 'none';
+			document.getElementById('version-badge').style.display = '';
+			document.getElementById('cur-version').textContent = latest.v;
+			document.getElementById('version-meta').innerHTML = `Đang chỉnh sửa — sẽ tạo Phiên bản ${latest.v + 1}`;
+			document.getElementById('reason-block').style.display = '';
+			document.getElementById('edit-hint').className = 'ksl-note warn mb-3';
+			document.getElementById('edit-hint').innerHTML = '<i class="bi bi-exclamation-circle me-1"></i>Chỉ các tháng từ <strong>Tháng ' + (curM + 1) + '</strong> trở đi mới chỉnh được. Bắt buộc nhập lý do trước khi lưu.';
+			document.getElementById('edit-hint').style.display = '';
+
+			document.getElementById('detail-actions').innerHTML = `
+				<button class="btn btn-outline-inverse btn-sm" id="btn-cancel"><i class="bi bi-x me-1"></i>Huỷ</button>
+				<button class="btn btn-theme btn-sm" id="btn-do-save" disabled><i class="bi bi-save me-1"></i>Lưu thay đổi</button>`;
+			document.getElementById('btn-cancel').addEventListener('click', () => {
+				isEditing = false;
+				render(year);
+			});
+
+			// Khởi tạo draft
+			draftPcts = {};
+			parts.forEach((p, pi) => {
+				const raw = D.DEFAULT_MONTH_PERCENT.map((v, i) => {
+					const jitter = ((pi * 3 + i * 2) % 3) - 1;
+					return Math.max(0, v === 0 ? 0 : v + jitter);
+				});
+				const sum = raw.reduce((a,b)=>a+b,0);
+				draftPcts[p.id] = raw.map(x => parseFloat((x/sum*100).toFixed(1)));
+			});
+
+			renderMatrix(staPlan, parts, totalPartsTrees, curM, true, true);
+			attachListeners(year, staPlan, parts, totalPartsTrees, curM, true);
+			renderHistory(versions);
+		}
+
+		function renderMatrix(staPlan, parts, totalPartsTrees, curM, editable, lockPast) {
+			const months = D.MONTHS_SHORT;
+			let html = '<thead><tr><th class="sticky-col">Lô · Phần cây · Công nhân</th>';
+			for (let m = 1; m <= 12; m++) {
+				const cls = m < curM ? 'month-past' : (m === curM ? 'month-current' : 'month-future');
+				html += `<th class="${cls}">${months[m-1]}</th>`;
+			}
+			html += '<th>Tổng</th></tr></thead><tbody>';
+
+			let monthTotals = new Array(12).fill(0);
+			parts.forEach((p, pi) => {
+				if (!draftPcts[p.id]) {
+					const raw = D.DEFAULT_MONTH_PERCENT.map((v, i) => {
+						const jitter = ((pi * 3 + i * 2) % 3) - 1;
+						return Math.max(0, v === 0 ? 0 : v + jitter);
+					});
+					const sum = raw.reduce((a,b)=>a+b,0);
+					draftPcts[p.id] = raw.map(x => parseFloat((x/sum*100).toFixed(1)));
+				}
+				const pcts = draftPcts[p.id];
+				const sum = pcts.reduce((a,b)=>a+b,0);
+				const isValid = Math.abs(sum - 100) < 0.5;
+				const partTrees = Math.round(p.lot.trees / p.lot.parts);
+				const partPlan = Math.round(staPlan * (partTrees / totalPartsTrees));
+				const label = `<strong>${p.lot.name} · Phần ${p.partNo}</strong>
+					<div class="small text-inverse text-opacity-60">${p.assigned ? '<i class="bi bi-person-check me-1 text-theme"></i>' + p.workerName : '<i class="bi bi-person-x me-1 text-danger"></i>Trống'}</div>
+					<div class="small text-inverse text-opacity-50">${D.fmtKg(partPlan)}</div>`;
+
+				html += `<tr><td class="sticky-col">${label}</td>`;
+				pcts.forEach((pct, i) => {
+					const m = i + 1;
+					const isPast = m <= curM;
+					const canEdit = editable && (!lockPast || !isPast);
+					const cls = m < curM ? 'month-past' : (m === curM ? 'month-current' : 'month-future');
+					const kg = Math.round(partPlan * pct / 100);
+					monthTotals[i] += kg;
+					const cell = canEdit
+						? `<input type="number" step="0.1" min="0" max="100" value="${pct}" data-row="${p.id}" data-month="${i}" class="pct-input fw-bold"/><div class="small text-inverse text-opacity-50">${D.fmtNum(kg)}</div>`
+						: `<span class="fw-bold">${pct > 0 ? pct : '—'}</span><div class="small text-inverse text-opacity-50">${pct > 0 ? D.fmtNum(kg) : ''}</div>`;
+					html += `<td class="${cls}">${cell}</td>`;
+				});
+				const sumCls = isValid ? 'text-success' : 'text-danger fw-bold';
+				html += `<td class="${sumCls}" data-row-total="${p.id}">${sum.toFixed(1)}%</td></tr>`;
+			});
+
+			html += `<tr class="total-row"><td class="sticky-col">TỔNG GA</td>`;
+			let grand = 0;
+			monthTotals.forEach((v, i) => {
+				grand += v;
+				const m = i + 1;
+				const cls = m < curM ? 'month-past' : (m === curM ? 'month-current' : 'month-future');
+				html += `<td class="${cls}"><strong>${staPlan ? ((v/staPlan)*100).toFixed(1)+'%' : '—'}</strong><div class="small text-inverse text-opacity-50">${D.fmtNum(v)}</div></td>`;
+			});
+			html += `<td><strong>${D.fmtKg(grand)}</strong></td></tr></tbody>`;
+			document.getElementById('matrix').innerHTML = html;
+		}
+
+		function attachListeners(year, staPlan, parts, totalPartsTrees, curM, isEditMode) {
+			document.getElementById('matrix').addEventListener('input', e => {
+				const inp = e.target.closest('.pct-input');
+				if (!inp) return;
+				const rid = inp.dataset.row;
+				const mi = parseInt(inp.dataset.month);
+				draftPcts[rid][mi] = parseFloat(inp.value) || 0;
+				const sum = draftPcts[rid].reduce((a,b)=>a+b,0);
+				const el = document.querySelector(`[data-row-total="${rid}"]`);
+				if (el) {
+					el.textContent = sum.toFixed(1) + '%';
+					el.className = Math.abs(sum - 100) < 0.5 ? 'text-success' : 'text-danger fw-bold';
+				}
+				checkCanSave(parts, isEditMode);
+			});
+			if (isEditMode) {
+				document.getElementById('edit-reason').addEventListener('input', () => checkCanSave(parts, true));
+			}
+		}
+
+		function checkCanSave(parts, isEditMode) {
+			const allValid = parts.every(p => {
+				const sum = (draftPcts[p.id] || []).reduce((a,b)=>a+b,0);
+				return Math.abs(sum - 100) < 0.5;
+			});
+			const reasonOk = !isEditMode || (document.getElementById('edit-reason')?.value?.trim().length > 0);
+			const btn = document.getElementById('btn-do-save');
+			if (btn) {
+				btn.disabled = !(allValid && reasonOk);
+				btn.onclick = allValid && reasonOk ? () => doSave(isEditMode) : null;
+			}
+		}
+
+		function doSave(isEditMode) {
+			const year = parseInt(selYear.value);
+			if (!company.monthlyVersions[year]) company.monthlyVersions[year] = [];
+			const versions = company.monthlyVersions[year];
+			const newV = versions.length + 1;
+			const reason = isEditMode
+				? (document.getElementById('edit-reason')?.value?.trim() || 'Điều chỉnh')
+				: 'Phân bổ ban đầu';
+			versions.push({ v: newV, createdAt: D.currentDate, createdBy: sta.name + ' (Trưởng Ga)', note: reason });
+			isEditing = false;
+			render(year);
+		}
+
+		function renderHistory(versions) {
+			document.getElementById('history-card').style.display = '';
+			document.getElementById('version-history').innerHTML = versions.slice().reverse().map(v => `
+				<div class="d-flex align-items-start gap-3 p-2 rounded-3 mb-2" style="background:rgba(var(--bs-inverse-rgb),0.03);border:1px solid rgba(var(--bs-inverse-rgb),0.06);">
+					<div class="ksl-version-pill"><i class="bi bi-git"></i>v${v.v}</div>
+					<div class="flex-1">
+						<div class="fw-bold">${v.note}</div>
+						<div class="small text-inverse text-opacity-60">${v.createdBy} · ${v.createdAt}</div>
+					</div>
+				</div>`).join('');
+		}
+
+		render(parseInt(selYear.value));
+	})();
+	</script>
+</body>
+</html>

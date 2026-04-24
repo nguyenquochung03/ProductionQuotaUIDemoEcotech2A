@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<title>Khoán sản lượng | 1.1 Lên kế hoạch khoán</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="../hud_admin_v2.3/template_html/dist/assets/css/vendor.min.css" rel="stylesheet">
+	<link href="../hud_admin_v2.3/template_html/dist/assets/css/app.min.css" rel="stylesheet">
+	<link href="_app.css" rel="stylesheet">
+</head>
+<body>
+	<div id="app" class="app">
+		<div id="content" class="app-content">
+
+			<div class="ksl-page-header">
+				<div class="page-icon"><i class="bi bi-journal-text"></i></div>
+				<div>
+					<h1>Lên kế hoạch khoán</h1>
+					<div class="subtitle">Cấp Công ty · Lập kế hoạch khoán năm — nhập theo từng lô, tự cộng dồn lên Ga → Đội → Công ty</div>
+				</div>
+			</div>
+
+			<!-- ============================ LIST ============================ -->
+			<div class="card mb-3">
+				<div class="card-body">
+					<div class="d-flex align-items-center mb-3">
+						<h5 class="fw-bold mb-0 flex-1"><i class="bi bi-collection me-2 text-theme"></i>Danh sách kế hoạch khoán theo năm</h5>
+						<button class="btn btn-outline-theme btn-sm" id="btn-create-next">
+							<i class="bi bi-plus-lg me-1"></i> Lên kế hoạch cho năm <span id="next-year-label"></span>
+						</button>
+					</div>
+
+					<div class="table-responsive">
+						<table class="table table-hover table-ksl align-middle mb-0">
+							<thead>
+								<tr>
+									<th style="width:12%">Năm kế hoạch</th>
+									<th>Tổng khoán năm</th>
+										<th>Người chốt</th>
+									<th>Ngày chốt</th>
+									<th style="width:12%">Trạng thái</th>
+									<th style="width:160px"></th>
+								</tr>
+							</thead>
+							<tbody id="plan-list-tbody"></tbody>
+						</table>
+					</div>
+				</div>
+				<div class="card-arrow">
+					<div class="card-arrow-top-left"></div><div class="card-arrow-top-right"></div>
+					<div class="card-arrow-bottom-left"></div><div class="card-arrow-bottom-right"></div>
+				</div>
+			</div>
+
+			<!-- ============================ DETAIL ============================ -->
+			<div class="card mb-3" id="plan-detail-card" style="display:none;">
+				<div class="card-body">
+					<div class="d-flex flex-wrap align-items-start mb-3">
+						<div class="flex-1">
+							<div class="small text-inverse text-opacity-50 mb-1">CHI TIẾT KẾ HOẠCH NĂM</div>
+							<div class="d-flex align-items-center gap-3 flex-wrap">
+								<h3 class="fw-bold mb-0" id="detail-year-title">—</h3>
+								<span id="detail-status-badge"></span>
+								<span class="small text-inverse text-opacity-60" id="detail-meta"></span>
+							</div>
+						</div>
+						<div id="detail-actions" class="d-flex gap-2"></div>
+					</div>
+
+					<div class="ksl-note" id="detail-hint"></div>
+
+					<!-- Tổng chỉ số cộng dồn -->
+					<div class="row g-2 mb-3">
+						<div class="col-md-3 col-6">
+							<div class="ksl-kpi accent-theme">
+								<div class="lbl">Tổng kế hoạch năm (Công ty)</div>
+								<div class="val" id="k-total">—</div>
+								<div class="sub" id="k-total-sub">—</div>
+							</div>
+						</div>
+						<div class="col-md-3 col-6">
+							<div class="ksl-kpi">
+								<div class="lbl">Số lô</div>
+								<div class="val" id="k-lot-count">—</div>
+								<div class="sub">Tổng diện tích <span id="k-area">—</span> ha</div>
+							</div>
+						</div>
+						<div class="col-md-3 col-6">
+							<div class="ksl-kpi">
+								<div class="lbl">Tổng số cây cạo</div>
+								<div class="val" id="k-trees">—</div>
+								<div class="sub">Tổng số phần cây <span id="k-parts">—</span></div>
+							</div>
+						</div>
+						<div class="col-md-3 col-6">
+							<div class="ksl-kpi accent-info">
+								<div class="lbl">Năng suất trung bình</div>
+								<div class="val" id="k-yield">—<span class="unit">kg/ha</span></div>
+								<div class="sub" id="k-yield-sub">—</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- BẢNG 1: Theo từng Lô -->
+					<div class="mb-2">
+						<div class="d-flex align-items-center mb-2 flex-wrap gap-2">
+							<div class="small text-inverse text-opacity-60">Nhập kế hoạch năm cho từng lô. Năng suất tham chiếu lấy trung bình 3 năm gần nhất. Kế hoạch lô = Năng suất điều chỉnh × số cây cạo mới.</div>
+							<div class="ms-auto d-flex gap-2">
+								<button class="btn btn-sm btn-outline-inverse"><i class="bi bi-file-earmark-excel me-1"></i>Xuất Excel</button>
+								<button class="btn btn-sm btn-outline-inverse"><i class="bi bi-upload me-1"></i>Nhập từ Excel</button>
+							</div>
+						</div>
+						<div class="table-responsive" style="max-height:420px;overflow:auto;">
+							<table class="table table-sm align-middle mb-0 table-ksl">
+								<thead class="sticky-top" style="background:var(--bs-component-bg);z-index:2;">
+									<tr>
+										<th style="min-width:80px;">Đội</th>
+										<th style="min-width:70px;">Ga</th>
+										<th style="min-width:80px;">Lô</th>
+										<th class="text-end">Năm trồng</th>
+										<th class="text-end">Diện tích (ha)</th>
+										<th class="text-end">Số cây cạo</th>
+										<th class="text-end">Số phần cây</th>
+										<th class="text-end">Năng suất trung bình 3 năm gần nhất (kg/cây)</th>
+										<th class="text-end" style="min-width:130px;">Kế hoạch lô (kg)</th>
+									</tr>
+								</thead>
+								<tbody id="lot-tbody"></tbody>
+								<tfoot>
+									<tr class="total-row" style="background:rgba(var(--bs-theme-rgb),0.1);">
+										<td colspan="5" class="fw-bold">TỔNG CÔNG TY</td>
+										<td class="text-end fw-bold" id="f-trees">—</td>
+										<td class="text-end fw-bold" id="f-parts">—</td>
+										<td></td>
+										<td class="text-end fw-bold text-theme" id="f-total">—</td>
+									</tr>
+								</tfoot>
+							</table>
+						</div>
+					</div>
+
+					<!-- BẢNG 2: Cộng dồn Ga -->
+					<div class="mt-4 mb-2">
+						<div class="d-flex align-items-center mb-2 gap-2">
+							<i class="bi bi-arrow-down text-theme"></i>
+							<span class="fw-bold small">Cộng dồn theo Ga</span>
+							<span class="small text-inverse text-opacity-50">Σ Kế hoạch lô = Kế hoạch Ga</span>
+						</div>
+						<div class="table-responsive">
+							<table class="table table-ksl align-middle mb-0">
+								<thead>
+									<tr>
+										<th>Đội</th>
+										<th>Ga / Tổ</th>
+										<th class="text-end">Số lô</th>
+										<th class="text-end">Tổng cây cạo</th>
+										<th class="text-end">Tổng phần cây</th>
+										<th class="text-end">Kế hoạch năm Ga (kg)</th>
+										<th class="text-end">% trên Đội</th>
+									</tr>
+								</thead>
+								<tbody id="sta-tbody"></tbody>
+							</table>
+						</div>
+					</div>
+
+					<!-- BẢNG 3: Cộng dồn Đội -->
+					<div class="mt-4 mb-2">
+						<div class="d-flex align-items-center mb-2 gap-2">
+							<i class="bi bi-arrow-down text-theme"></i>
+							<span class="fw-bold small">Cộng dồn theo Đội</span>
+							<span class="small text-inverse text-opacity-50">Σ Kế hoạch Ga = Kế hoạch Đội</span>
+						</div>
+						<div class="table-responsive">
+							<table class="table table-ksl align-middle mb-0">
+								<thead>
+									<tr>
+										<th>Đội / Nông trường</th>
+										<th class="text-end">Số Ga</th>
+										<th class="text-end">Số lô</th>
+										<th class="text-end">Kế hoạch năm Đội (kg)</th>
+										<th class="text-end">% trên Công ty</th>
+										<th style="width:220px"></th>
+									</tr>
+								</thead>
+								<tbody id="team-tbody"></tbody>
+							</table>
+						</div>
+					</div>
+
+					<!-- BẢNG 4: Tổng Công ty -->
+					<div class="mt-4 mb-0">
+						<div class="d-flex align-items-center mb-2 gap-2">
+							<i class="bi bi-arrow-down text-theme"></i>
+							<span class="fw-bold small">Tổng Công ty</span>
+							<span class="small text-inverse text-opacity-50">Σ Kế hoạch Đội = Kế hoạch Công ty</span>
+						</div>
+						<div class="row g-3">
+							<div class="col-md-6">
+								<div class="ksl-kpi accent-theme">
+									<div class="lbl">Tổng khoán năm công ty (kg)</div>
+									<div class="val" id="c-total-kg">—</div>
+									<div class="sub" id="c-total-ton">—</div>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="ksl-kpi">
+									<div class="lbl">So với năm trước</div>
+									<div class="val" id="c-yoy">—</div>
+									<div class="sub" id="c-yoy-sub">—</div>
+								</div>
+							</div>
+						</div>
+						<div class="ksl-note info mt-3 mb-0">
+							<strong>Lưu ý:</strong> Sau khi chốt, kế hoạch <u>bất biến</u> — mọi thay đổi giữa năm phải đi qua "Khoán bổ sung" hoặc "Cân đối sản lượng liên đội", không ghi đè kế hoạch gốc.
+						</div>
+					</div>
+				</div>
+				<div class="card-arrow">
+					<div class="card-arrow-top-left"></div><div class="card-arrow-top-right"></div>
+					<div class="card-arrow-bottom-left"></div><div class="card-arrow-bottom-right"></div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	<!-- ===== Popup chốt kế hoạch ===== -->
+	<div class="modal fade" id="modal-confirm-lock" tabindex="-1">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title"><i class="bi bi-shield-lock-fill text-warning me-2"></i>Xác nhận chốt kế hoạch</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body">
+					<div class="ksl-note warn">
+						<strong>Kế hoạch sau khi chốt sẽ BẤT BIẾN.</strong> Mọi thay đổi giữa năm chỉ có thể đi qua nghiệp vụ <em>Khoán bổ sung</em> (chỉ thêm) hoặc <em>Cân đối sản lượng liên đội</em> — không ghi đè con số gốc.
+					</div>
+					<p class="mb-1">Bạn có chắc muốn chốt kế hoạch khoán năm <strong id="confirm-year">—</strong>?</p>
+					<p class="small text-inverse text-opacity-60 mb-0">Tổng khoán: <strong id="confirm-total" class="text-theme">—</strong></p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-outline-inverse" data-bs-dismiss="modal">Huỷ</button>
+					<button type="button" class="btn btn-warning" id="btn-confirm-lock"><i class="bi bi-lock-fill me-1"></i>Chốt kế hoạch</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="_data.js"></script>
+	<script src="_shell.js"></script>
+	<script>Shell.render({ activePageId: 'cty-1-1' });</script>
+
+	<script src="../hud_admin_v2.3/template_html/dist/assets/js/vendor.min.js"></script>
+	<script src="../hud_admin_v2.3/template_html/dist/assets/js/app.min.js"></script>
+
+	<script>
+	(function () {
+		const state = Shell.getState();
+		const company = KSL_DATA.getCompany(state.companyId);
+		const D = KSL_DATA;
+
+		document.getElementById('next-year-label').textContent = D.nextYear;
+
+		// Danh sách plan
+		const years = Object.keys(company.plans).map(Number).sort((a,b)=>b-a);
+		const tbody = document.getElementById('plan-list-tbody');
+		tbody.innerHTML = years.map(y => {
+			const p = company.plans[y];
+			const status = p.status;
+			let badge = '', actions = '';
+			if (status === 'locked') {
+				badge = '<span class="ksl-status locked"><i class="bi bi-lock-fill"></i>Đã chốt</span>';
+				actions = `<button class="btn btn-sm btn-outline-inverse" data-action="view" data-year="${y}"><i class="bi bi-eye me-1"></i>Xem</button>`;
+			} else if (status === 'draft') {
+				badge = '<span class="ksl-status draft"><i class="bi bi-pencil-fill"></i>Đang soạn</span>';
+				actions = `<button class="btn btn-sm btn-outline-theme me-1" data-action="edit" data-year="${y}"><i class="bi bi-pencil me-1"></i>Sửa</button>
+				           <button class="btn btn-sm btn-warning" data-action="lock" data-year="${y}"><i class="bi bi-lock me-1"></i>Chốt</button>`;
+			} else {
+				badge = '<span class="ksl-status none">Chưa tạo</span>';
+				actions = `<button class="btn btn-sm btn-outline-theme" data-action="create" data-year="${y}"><i class="bi bi-plus me-1"></i>Tạo</button>`;
+			}
+			return `<tr>
+				<td><strong class="fs-5">${y}</strong></td>
+				<td><span class="text-theme fw-bold">${D.fmtKg(p.total)}</span> <span class="text-inverse text-opacity-50 small">(${D.fmtTon(p.total)})</span></td>
+				<td>${p.approvedBy || '—'}</td>
+				<td>${p.approvedAt || '—'}</td>
+				<td>${badge}</td>
+				<td class="text-end">${actions}</td>
+			</tr>`;
+		}).join('');
+
+		// Nút "tạo năm tiếp theo"
+		const btnCreate = document.getElementById('btn-create-next');
+		btnCreate.addEventListener('click', () => openDetail(D.nextYear));
+
+		tbody.addEventListener('click', e => {
+			const btn = e.target.closest('button[data-action]');
+			if (!btn) return;
+			openDetail(parseInt(btn.dataset.year, 10));
+		});
+
+		// === Detail render ===
+		const detailCard = document.getElementById('plan-detail-card');
+
+		function openDetail(year) {
+			const plan = company.plans[year] || { status: 'draft', total: 0 };
+			const lots = D.flatLots(company);
+			const isLocked = plan.status === 'locked';
+			const isDraft = plan.status === 'draft';
+
+			// Title
+			document.getElementById('detail-year-title').textContent = `Kế hoạch khoán năm ${year}`;
+			const meta = plan.approvedAt ? `Chốt bởi <strong>${plan.approvedBy}</strong> lúc ${plan.approvedAt}` : (plan.createdAt ? `Khởi tạo lúc ${plan.createdAt}` : 'Kế hoạch mới');
+			document.getElementById('detail-meta').innerHTML = meta;
+			const sb = document.getElementById('detail-status-badge');
+			if (isLocked) sb.innerHTML = '<span class="ksl-status locked"><i class="bi bi-lock-fill"></i>Đã chốt</span>';
+			else if (isDraft) sb.innerHTML = '<span class="ksl-status draft"><i class="bi bi-pencil-fill"></i>Đang soạn</span>';
+			else sb.innerHTML = '<span class="ksl-status none">Chưa tạo</span>';
+
+			// Hint
+			const hint = document.getElementById('detail-hint');
+			if (isLocked) {
+				hint.className = 'ksl-note info';
+				hint.innerHTML = '<i class="bi bi-info-circle me-1"></i>Kế hoạch đã chốt — chỉ xem. Mọi thay đổi phải qua <em>Khoán bổ sung</em> hoặc <em>Cân đối sản lượng</em>.';
+			} else {
+				hint.className = 'ksl-note warn';
+				hint.innerHTML = '<i class="bi bi-exclamation-triangle me-1"></i>Kế hoạch đang soạn — có thể chỉnh sửa kế hoạch từng lô. Ràng buộc: <strong>Σ Kế hoạch lô = Kế hoạch Ga</strong>, <strong>Σ Kế hoạch Ga = Kế hoạch Đội</strong>, <strong>Σ Kế hoạch Đội = Kế hoạch Công ty</strong>.';
+			}
+
+			// Actions
+			const acts = document.getElementById('detail-actions');
+			if (isLocked) {
+				acts.innerHTML = `<button class="btn btn-outline-inverse btn-sm" onclick="document.getElementById('plan-detail-card').style.display='none';"><i class="bi bi-x-lg me-1"></i>Đóng</button>`;
+			} else {
+				acts.innerHTML = `
+					<button class="btn btn-outline-inverse btn-sm"><i class="bi bi-save me-1"></i>Lưu nháp</button>
+					<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#modal-confirm-lock"><i class="bi bi-lock-fill me-1"></i>Chốt kế hoạch</button>
+				`;
+			}
+
+			// Generate lot-level data from lots + history + plan total
+			const lotsWithPlan = lots.map((lot, i) => {
+				const hist = D.mockLotHistory(lot.id);
+				const y3 = hist[2].yield;
+				const nsPerTree = y3 / lot.trees;
+				const age = year - lot.year;
+				let adj = 0;
+				if (age < 10) adj = 4;
+				else if (age < 15) adj = 1;
+				else if (age < 20) adj = 0;
+				else adj = -8;
+				const nsAdj = nsPerTree * (1 + adj / 100);
+				const planLot = Math.round(nsAdj * lot.trees);
+				const planPerPart = Math.round(planLot / lot.parts);
+				return { ...lot, age, nsPerTree, adj, nsAdj, planLot, planPerPart };
+			});
+			const totalLot = lotsWithPlan.reduce((s, l) => s + l.planLot, 0);
+			const totalTrees = lotsWithPlan.reduce((s, l) => s + l.trees, 0);
+			const totalParts = lotsWithPlan.reduce((s, l) => s + l.parts, 0);
+			const totalArea = lotsWithPlan.reduce((s, l) => s + l.area, 0);
+
+			// KPIs
+			document.getElementById('k-total').innerHTML = D.fmtNum(totalLot) + '<span class="unit">kg</span>';
+			document.getElementById('k-total-sub').textContent = D.fmtTon(totalLot) + ' · tương đương ' + D.fmtTon(plan.total) + ' (chốt)';
+			document.getElementById('k-lot-count').textContent = lotsWithPlan.length;
+			document.getElementById('k-area').textContent = totalArea.toFixed(1);
+			document.getElementById('k-trees').textContent = D.fmtNum(totalTrees);
+			document.getElementById('k-parts').textContent = D.fmtNum(totalParts);
+			const avgYield = totalLot / totalArea;
+			document.getElementById('k-yield').innerHTML = D.fmtNum(avgYield) + '<span class="unit">kg/ha</span>';
+			document.getElementById('k-yield-sub').textContent = (totalLot / totalTrees).toFixed(2) + ' kg/cây bình quân';
+
+			// Tab Lô
+			const lotTbody = document.getElementById('lot-tbody');
+			lotTbody.innerHTML = lotsWithPlan.map(l => {
+				const roBtn = isLocked ? 'readonly' : '';
+				return `<tr>
+					<td class="small">${l.teamName}</td>
+					<td class="small">${l.stationName || '—'}</td>
+					<td><strong>${l.name}</strong><div class="small text-inverse text-opacity-50">${l.seedling}</div></td>
+					<td class="text-end">${l.year}<div class="small text-inverse text-opacity-50">${l.age} năm</div></td>
+					<td class="text-end">${l.area.toFixed(1)}</td>
+					<td class="text-end">${D.fmtNum(l.trees)}</td>
+					<td class="text-end">${l.parts}</td>
+					<td class="text-end">${l.nsPerTree.toFixed(2)}</td>
+					<td class="text-end"><input type="text" class="ksl-inline-input fw-bold text-theme" value="${D.fmtNum(l.planLot)}" ${roBtn}/></td>
+				</tr>`;
+			}).join('');
+			document.getElementById('f-trees').textContent = D.fmtNum(totalTrees);
+			document.getElementById('f-parts').textContent = D.fmtNum(totalParts);
+			document.getElementById('f-total').textContent = D.fmtKg(totalLot);
+
+			// Tab Ga
+			const staTbody = document.getElementById('sta-tbody');
+			const staMap = new Map();
+			lotsWithPlan.forEach(l => {
+				const key = (l.teamId || '') + '||' + (l.stationId || 'NO_STA');
+				if (!staMap.has(key)) staMap.set(key, { teamName: l.teamName, stationName: l.stationName || '(Mô hình 2 — không qua Ga)', lots: 0, trees: 0, parts: 0, plan: 0, teamId: l.teamId });
+				const s = staMap.get(key);
+				s.lots++; s.trees += l.trees; s.parts += l.parts; s.plan += l.planLot;
+			});
+			const staArr = Array.from(staMap.values());
+			const teamTotals = {};
+			staArr.forEach(s => teamTotals[s.teamId] = (teamTotals[s.teamId] || 0) + s.plan);
+			staTbody.innerHTML = staArr.map(s => `<tr>
+				<td>${s.teamName}</td>
+				<td><strong>${s.stationName}</strong></td>
+				<td class="text-end">${s.lots}</td>
+				<td class="text-end">${D.fmtNum(s.trees)}</td>
+				<td class="text-end">${s.parts}</td>
+				<td class="text-end text-theme fw-bold">${D.fmtKg(s.plan)}</td>
+				<td class="text-end">${((s.plan / teamTotals[s.teamId]) * 100).toFixed(1)}%</td>
+			</tr>`).join('');
+
+			// Tab Đội
+			const teamTbody = document.getElementById('team-tbody');
+			const teamMap = new Map();
+			lotsWithPlan.forEach(l => {
+				if (!teamMap.has(l.teamId)) teamMap.set(l.teamId, { name: l.teamName, stas: new Set(), lots: 0, plan: 0 });
+				const t = teamMap.get(l.teamId);
+				if (l.stationId) t.stas.add(l.stationId);
+				t.lots++; t.plan += l.planLot;
+			});
+			const teamArr = Array.from(teamMap.values());
+			teamTbody.innerHTML = teamArr.map(t => `<tr>
+				<td><strong>${t.name}</strong></td>
+				<td class="text-end">${t.stas.size || (company.model === '2' ? '—' : 0)}</td>
+				<td class="text-end">${t.lots}</td>
+				<td class="text-end text-theme fw-bold">${D.fmtKg(t.plan)}</td>
+				<td class="text-end">${((t.plan / totalLot) * 100).toFixed(1)}%</td>
+				<td>
+					<div class="ksl-hbar"><span style="width:${((t.plan / totalLot) * 100).toFixed(1)}%"></span></div>
+				</td>
+			</tr>`).join('');
+
+			// Tab Công ty
+			document.getElementById('c-total-kg').innerHTML = D.fmtNum(totalLot) + '<span class="unit">kg</span>';
+			document.getElementById('c-total-ton').textContent = D.fmtTon(totalLot);
+			const prev = company.plans[year - 1];
+			if (prev && prev.total) {
+				const diff = ((totalLot - prev.total) / prev.total) * 100;
+				document.getElementById('c-yoy').innerHTML = (diff >= 0 ? '+' : '') + diff.toFixed(1) + '<span class="unit">%</span>';
+				document.getElementById('c-yoy-sub').textContent = 'Năm trước (' + (year - 1) + '): ' + D.fmtTon(prev.total);
+			} else {
+				document.getElementById('c-yoy').textContent = '—';
+				document.getElementById('c-yoy-sub').textContent = 'Không có dữ liệu năm trước để so sánh';
+			}
+
+			// Confirm modal
+			document.getElementById('confirm-year').textContent = year;
+			document.getElementById('confirm-total').textContent = D.fmtKg(totalLot);
+
+			detailCard.style.display = '';
+			detailCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		}
+
+		// Auto-open the draft year if exists
+		const draftYear = years.find(y => company.plans[y].status === 'draft');
+		if (draftYear) openDetail(draftYear);
+
+		// Confirm lock demo
+		document.getElementById('btn-confirm-lock').addEventListener('click', () => {
+			alert('Bản trình diễn: đã chốt kế hoạch (không thực sự lưu trong bản phác thảo giao diện).');
+			bootstrap.Modal.getInstance(document.getElementById('modal-confirm-lock')).hide();
+		});
+	})();
+	</script>
+</body>
+</html>

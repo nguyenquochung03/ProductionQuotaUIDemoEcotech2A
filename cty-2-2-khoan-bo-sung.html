@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<title>Khoán sản lượng | 2.2 Khoán bổ sung</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="../hud_admin_v2.3/template_html/dist/assets/css/vendor.min.css" rel="stylesheet">
+	<link href="../hud_admin_v2.3/template_html/dist/assets/css/app.min.css" rel="stylesheet">
+	<link href="_app.css" rel="stylesheet">
+</head>
+<body>
+	<div id="app" class="app">
+		<div id="content" class="app-content">
+
+			<div class="ksl-page-header">
+				<div class="page-icon"><i class="bi bi-plus-square"></i></div>
+				<div>
+					<h1>Khoán bổ sung</h1>
+					<div class="subtitle">Cấp Công ty · Sản lượng Tập đoàn Công nghiệp Cao su Việt Nam giao thêm giữa năm — <strong>chỉ được thêm, không ghi đè Kế hoạch gốc</strong></div>
+				</div>
+			</div>
+
+			<!-- TỔNG QUAN -->
+			<div class="row g-2 mb-3">
+				<div class="col-lg-3 col-md-6">
+					<div class="ksl-kpi">
+						<div class="lbl">Kế hoạch gốc năm <span id="tag-year">—</span></div>
+						<div class="val" id="k-base">—</div>
+						<div class="sub" id="k-base-sub">—</div>
+					</div>
+				</div>
+				<div class="col-lg-3 col-md-6">
+					<div class="ksl-kpi accent-info">
+						<div class="lbl">Tổng bổ sung</div>
+						<div class="val" id="k-supp">—</div>
+						<div class="sub"><span id="k-supp-count">0</span> đợt bổ sung</div>
+					</div>
+				</div>
+				<div class="col-lg-3 col-md-6">
+					<div class="ksl-kpi accent-theme">
+						<div class="lbl">Kế hoạch hiệu lực = Gốc + Bổ sung</div>
+						<div class="val" id="k-effective">—</div>
+						<div class="sub" id="k-effective-sub">—</div>
+					</div>
+				</div>
+				<div class="col-lg-3 col-md-6">
+					<div class="ksl-kpi accent-warn">
+						<div class="lbl">% bổ sung so với gốc</div>
+						<div class="val" id="k-pct">—<span class="unit">%</span></div>
+						<div class="sub">Tập đoàn ước ban hành thêm 5-10% giữa năm</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="ksl-note info">
+				<strong><i class="bi bi-info-circle me-1"></i>Nguyên tắc bất biến (Rule 12):</strong>
+				Khoán bổ sung <u>luôn là bản ghi mới</u>. Hệ thống hiển thị kế hoạch gốc và tổng bổ sung <u>tách biệt</u>. Phân bổ xuống Đội <strong>theo kilogram</strong> (không theo %) vì địa hình mỗi Đội khác nhau. Sau đó Đội và Ga tự chuyển xuống các cấp dưới.
+			</div>
+
+			<!-- DANH SÁCH BỔ SUNG -->
+			<div class="card mb-3">
+				<div class="card-body">
+					<div class="d-flex align-items-center mb-3 flex-wrap gap-2">
+						<h5 class="fw-bold mb-0 flex-1"><i class="bi bi-list-ul me-2 text-theme"></i>Danh sách đợt khoán bổ sung năm <span id="list-year">—</span></h5>
+						<select class="form-select form-select-sm w-auto" id="sel-year"></select>
+						<button class="btn btn-outline-theme btn-sm" data-bs-toggle="modal" data-bs-target="#modal-add">
+							<i class="bi bi-plus-lg me-1"></i>Thêm khoán bổ sung mới
+						</button>
+					</div>
+					<div class="table-responsive">
+						<table class="table table-hover table-ksl align-middle mb-0">
+							<thead>
+								<tr>
+									<th style="width:5%">#</th>
+									<th>Số Quyết định / Công văn</th>
+									<th>Ngày ban hành</th>
+									<th class="text-end">Sản lượng bổ sung</th>
+									<th>Lý do</th>
+									<th>Người tạo</th>
+									<th style="width:140px"></th>
+								</tr>
+							</thead>
+							<tbody id="supp-tbody"></tbody>
+						</table>
+					</div>
+				</div>
+				<div class="card-arrow">
+					<div class="card-arrow-top-left"></div><div class="card-arrow-top-right"></div>
+					<div class="card-arrow-bottom-left"></div><div class="card-arrow-bottom-right"></div>
+				</div>
+			</div>
+
+			<!-- CHI TIẾT PHÂN BỔ -->
+			<div class="card mb-3" id="detail-card" style="display:none;">
+				<div class="card-body">
+					<div class="d-flex align-items-start mb-3">
+						<div class="flex-1">
+							<div class="small text-inverse text-opacity-50 mb-1">PHÂN BỔ BỔ SUNG XUỐNG CÁC ĐỘI</div>
+							<h5 class="fw-bold mb-1" id="d-code">—</h5>
+							<div class="small text-inverse text-opacity-70" id="d-reason">—</div>
+						</div>
+					</div>
+					<div class="table-responsive">
+						<table class="table table-ksl align-middle mb-0">
+							<thead>
+								<tr>
+									<th>Đội / Nông trường</th>
+									<th class="text-end">Kế hoạch năm gốc (kg)</th>
+									<th class="text-end">Bổ sung (kg)</th>
+									<th class="text-end">Kế hoạch hiệu lực (kg)</th>
+									<th class="text-end">Tăng %</th>
+									<th>Phân bổ</th>
+								</tr>
+							</thead>
+							<tbody id="alloc-tbody"></tbody>
+							<tfoot>
+								<tr class="total-row" style="background:rgba(var(--bs-theme-rgb),0.1);">
+									<td class="fw-bold">TỔNG CÔNG TY</td>
+									<td class="text-end fw-bold" id="f-base">—</td>
+									<td class="text-end fw-bold text-info" id="f-supp">—</td>
+									<td class="text-end fw-bold text-theme" id="f-eff">—</td>
+									<td class="text-end fw-bold" id="f-pct">—</td>
+									<td></td>
+								</tr>
+							</tfoot>
+						</table>
+					</div>
+					<div class="ksl-note warn mt-3">
+						<strong><i class="bi bi-hand-index-thumb me-1"></i>Gợi ý:</strong> Phòng Kỹ thuật có thể chia đều theo diện tích, theo số cây cạo, hoặc nhập thủ công. Đội sau khi nhận sẽ tự chuyển xuống Ga (tab <em>Đội 1.2</em>), Ga chuyển xuống phần cây (tab <em>Ga 1.2</em>).
+					</div>
+				</div>
+				<div class="card-arrow">
+					<div class="card-arrow-top-left"></div><div class="card-arrow-top-right"></div>
+					<div class="card-arrow-bottom-left"></div><div class="card-arrow-bottom-right"></div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	<!-- Modal thêm khoán bổ sung -->
+	<div class="modal fade" id="modal-add" tabindex="-1">
+		<div class="modal-dialog modal-dialog-centered modal-lg">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title"><i class="bi bi-plus-circle text-theme me-2"></i>Thêm khoán bổ sung mới</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body">
+					<div class="row g-3">
+						<div class="col-md-6">
+							<label class="form-label small">Số Quyết định / Công văn <span class="text-danger">*</span></label>
+							<input type="text" class="form-control" placeholder="Ví dụ: QuyetDinh-TapDoan/2026/123">
+						</div>
+						<div class="col-md-6">
+							<label class="form-label small">Ngày ban hành <span class="text-danger">*</span></label>
+							<input type="date" class="form-control" value="2026-04-24">
+						</div>
+						<div class="col-md-6">
+							<label class="form-label small">Sản lượng bổ sung (kg) <span class="text-danger">*</span></label>
+							<input type="number" class="form-control" placeholder="VD: 500000">
+						</div>
+						<div class="col-md-6">
+							<label class="form-label small">Loại nguồn</label>
+							<select class="form-select">
+								<option>Tập đoàn Công nghiệp Cao su Việt Nam giao thêm</option>
+								<option>Điều chỉnh nội bộ cuối năm</option>
+								<option>Khác</option>
+							</select>
+						</div>
+						<div class="col-12">
+							<label class="form-label small">Lý do / ghi chú <span class="text-danger">*</span></label>
+							<textarea class="form-control" rows="2" placeholder="Ví dụ: Tập đoàn Công nghiệp Cao su Việt Nam giao thêm theo tình hình giá mủ Quý 1"></textarea>
+						</div>
+						<div class="col-12">
+							<div class="ksl-note warn mb-0">
+								<strong>Lưu ý:</strong> Sau khi thêm, hệ thống sẽ mở màn hình phân bổ xuống các Đội theo kg. Bản ghi này <u>không sửa/xoá</u> được sau khi tạo — chỉ có thể thêm đợt khác để điều chỉnh.
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-outline-inverse" data-bs-dismiss="modal">Huỷ</button>
+					<button type="button" class="btn btn-theme"><i class="bi bi-arrow-right-circle me-1"></i>Tạo & phân bổ xuống Đội</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="_data.js"></script>
+	<script src="_shell.js"></script>
+	<script>Shell.render({ activePageId: 'cty-2-2' });</script>
+
+	<script src="../hud_admin_v2.3/template_html/dist/assets/js/vendor.min.js"></script>
+	<script src="../hud_admin_v2.3/template_html/dist/assets/js/app.min.js"></script>
+
+	<script>
+	(function () {
+		const state = Shell.getState();
+		const company = KSL_DATA.getCompany(state.companyId);
+		const D = KSL_DATA;
+
+		// Năm (chọn từ các năm có plan)
+		const years = Object.keys(company.plans).map(Number).sort((a,b)=>b-a);
+		const selYear = document.getElementById('sel-year');
+		selYear.innerHTML = years.map(y => `<option value="${y}" ${y === D.currentYear ? 'selected' : ''}>Năm ${y}</option>`).join('');
+		selYear.addEventListener('change', () => render(parseInt(selYear.value, 10)));
+
+		function render(year) {
+			document.getElementById('tag-year').textContent = year;
+			document.getElementById('list-year').textContent = year;
+			const kp = company.plans[year];
+			const supps = (company.supplementary || []).filter(s => s.date.startsWith(String(year)));
+			const suppTotal = supps.reduce((s, x) => s + x.kg, 0);
+
+			// KPIs
+			document.getElementById('k-base').innerHTML = D.fmtNum(kp.total) + '<span class="unit">kg</span>';
+			document.getElementById('k-base-sub').textContent = D.fmtTon(kp.total);
+			document.getElementById('k-supp').innerHTML = D.fmtNum(suppTotal) + '<span class="unit">kg</span>';
+			document.getElementById('k-supp-count').textContent = supps.length;
+			document.getElementById('k-effective').innerHTML = D.fmtNum(kp.total + suppTotal) + '<span class="unit">kg</span>';
+			document.getElementById('k-effective-sub').textContent = D.fmtTon(kp.total + suppTotal);
+			document.getElementById('k-pct').innerHTML = (kp.total ? (suppTotal / kp.total * 100).toFixed(1) : '0') + '<span class="unit">%</span>';
+
+			// Table
+			const tbody = document.getElementById('supp-tbody');
+			if (!supps.length) {
+				tbody.innerHTML = `<tr><td colspan="7" class="text-center text-inverse text-opacity-50 py-4">
+					<i class="bi bi-inbox fs-3 d-block mb-2"></i>Chưa có khoán bổ sung năm ${year}
+				</td></tr>`;
+				document.getElementById('detail-card').style.display = 'none';
+				return;
+			}
+			tbody.innerHTML = supps.map((s, i) => `<tr>
+				<td>${i + 1}</td>
+				<td><strong>${s.code}</strong></td>
+				<td>${s.date}</td>
+				<td class="text-end text-info fw-bold">${D.fmtKg(s.kg)}</td>
+				<td class="small">${s.reason}</td>
+				<td class="small">${s.createdBy}</td>
+				<td class="text-end">
+					<button class="btn btn-sm btn-outline-inverse" data-id="${s.id}"><i class="bi bi-eye me-1"></i>Phân bổ</button>
+				</td>
+			</tr>`).join('');
+
+			// Auto mở cái đầu tiên
+			if (supps[0]) showAlloc(supps[0], kp);
+
+			tbody.onclick = (e) => {
+				const btn = e.target.closest('button[data-id]');
+				if (!btn) return;
+				const s = supps.find(x => x.id === btn.dataset.id);
+				if (s) showAlloc(s, kp);
+			};
+		}
+
+		function showAlloc(s, kp) {
+			document.getElementById('detail-card').style.display = '';
+			document.getElementById('d-code').textContent = `${s.code} · ${s.date} · +${D.fmtKg(s.kg)}`;
+			document.getElementById('d-reason').textContent = s.reason;
+
+			const teams = company.teams;
+			const tbody = document.getElementById('alloc-tbody');
+			// Minh hoạ: phân bổ theo tỷ lệ kế hoạch gốc (chia đều theo số đội)
+			const sharePerTeam = Math.round(s.kg / teams.length);
+			const rows = teams.map((t, i) => {
+				const baseTeam = Math.round(kp.total / teams.length * (0.9 + i * 0.1));
+				const suppTeam = i === teams.length - 1 ? s.kg - sharePerTeam * (teams.length - 1) : sharePerTeam;
+				return { t, baseTeam, suppTeam };
+			});
+			let fBase = 0, fSupp = 0;
+			tbody.innerHTML = rows.map(r => {
+				fBase += r.baseTeam; fSupp += r.suppTeam;
+				const pct = (r.suppTeam / r.baseTeam * 100);
+				return `<tr>
+					<td><strong>${r.t.name}</strong></td>
+					<td class="text-end">${D.fmtNum(r.baseTeam)}</td>
+					<td class="text-end"><input type="text" class="ksl-inline-input text-info fw-bold" value="${D.fmtNum(r.suppTeam)}" style="width:140px;"/></td>
+					<td class="text-end text-theme fw-bold">${D.fmtNum(r.baseTeam + r.suppTeam)}</td>
+					<td class="text-end">+${pct.toFixed(1)}%</td>
+					<td><div class="ksl-hbar"><span style="width:${Math.min(pct * 4, 100).toFixed(0)}%"></span></div></td>
+				</tr>`;
+			}).join('');
+			document.getElementById('f-base').textContent = D.fmtKg(fBase);
+			document.getElementById('f-supp').textContent = D.fmtKg(fSupp);
+			document.getElementById('f-eff').textContent = D.fmtKg(fBase + fSupp);
+			document.getElementById('f-pct').textContent = '+' + (fSupp / fBase * 100).toFixed(1) + '%';
+		}
+
+		render(D.currentYear);
+	})();
+	</script>
+</body>
+</html>
