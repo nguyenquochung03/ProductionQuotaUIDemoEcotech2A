@@ -10,7 +10,7 @@
 (function () {
   'use strict';
 
-  const TPL = '../hud_admin_v2.3/template_html/dist/assets/';
+  const TPL = 'hud_admin_v2.3/template_html/dist/assets/';
 
   const PAGES = [
     // CÔNG TY
