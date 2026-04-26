@@ -38,30 +38,81 @@
 				<div class="ms-auto d-flex gap-2" id="detail-actions"></div>
 			</div>
 
-			<!-- KPIs -->
-			<div class="row g-2 mb-3">
-				<div class="col-md-3 col-6">
-					<div class="ksl-kpi accent-theme">
-						<div class="lbl">Kế hoạch năm Ga</div>
-						<div class="val" id="k-plan">—</div>
-						<div class="sub" id="k-plan-sub">—</div>
+			<!-- Tóm tắt chỉ tiêu năm + tháng -->
+			<div class="card mb-3">
+				<div class="card-body p-3">
+					<div class="row g-3">
+						<div class="col-lg-5">
+							<div class="small fw-bold text-inverse text-opacity-40 mb-2">
+								<i class="bi bi-calendar-check me-1 text-theme"></i>CHỈ TIÊU NĂM
+							</div>
+							<div class="ksl-plan-row">
+								<span class="pr-lbl">Kế hoạch năm Ga (gốc)</span>
+								<span class="pr-val" id="k-base">—</span>
+								<span class="pr-sub" id="k-base-sub">—</span>
+							</div>
+							<div class="ksl-plan-row">
+								<span class="pr-lbl" style="color:var(--bs-info)">+ Bổ sung đã nhận</span>
+								<span class="pr-val" style="color:var(--bs-info)" id="k-supp">—</span>
+								<span class="pr-sub" id="k-supp-sub">—</span>
+							</div>
+							<div class="ksl-plan-row" style="border-top:1px solid rgba(var(--bs-theme-rgb),0.18)">
+								<span class="pr-lbl fw-semibold" style="color:var(--bs-theme)">Kế hoạch hiệu lực</span>
+								<span class="pr-val" style="color:var(--bs-theme)" id="k-eff">—</span>
+								<span class="pr-sub" id="k-eff-sub">—</span>
+							</div>
+							<div class="ksl-plan-row">
+								<span class="pr-lbl" style="color:var(--bs-success)">+ Phấn đấu được giao</span>
+								<span class="pr-val" style="color:var(--bs-success)" id="k-strive">—</span>
+								<span class="pr-sub" id="k-strive-sub">—</span>
+							</div>
+						</div>
+						<div class="col-lg-1 d-none d-lg-flex justify-content-center">
+							<div style="width:1px;background:rgba(var(--bs-inverse-rgb),0.1);height:100%;min-height:120px"></div>
+						</div>
+						<div class="col-lg-6">
+							<div class="small fw-bold text-inverse text-opacity-40 mb-2">
+								<i class="bi bi-calendar3 me-1 text-warning"></i>
+								CHỈ TIÊU <span id="month-section-label" class="text-warning">THÁNG HIỆN TẠI</span>
+							</div>
+							<div class="ksl-month-spot">
+								<div class="ms-item primary">
+									<div class="ms-lbl">Chỉ tiêu tháng</div>
+									<div class="ms-val" id="km-base">—</div>
+									<div class="ms-sub" id="km-base-sub">—</div>
+								</div>
+								<div class="ms-item strive">
+									<div class="ms-lbl">Có phấn đấu</div>
+									<div class="ms-val" id="km-total">—</div>
+									<div class="ms-sub" id="km-eff-sub">—</div>
+								</div>
+							</div>
+						</div>
 					</div>
 				</div>
-				<div class="col-md-3 col-6">
+				<div class="card-arrow">
+					<div class="card-arrow-top-left"></div><div class="card-arrow-top-right"></div>
+					<div class="card-arrow-bottom-left"></div><div class="card-arrow-bottom-right"></div>
+				</div>
+			</div>
+
+			<!-- KPIs phụ -->
+			<div class="row g-2 mb-3">
+				<div class="col-md-4 col-6">
 					<div class="ksl-kpi">
 						<div class="lbl">Số phần cây</div>
 						<div class="val" id="k-parts">—</div>
 						<div class="sub"><span id="k-parts-empty">0</span> phần trống</div>
 					</div>
 				</div>
-				<div class="col-md-3 col-6">
+				<div class="col-md-4 col-6">
 					<div class="ksl-kpi accent-info">
 						<div class="lbl">Luỹ kế thực hiện</div>
 						<div class="val" id="k-done">—</div>
 						<div class="sub" id="k-done-sub">—</div>
 					</div>
 				</div>
-				<div class="col-md-3 col-6">
+				<div class="col-md-4 col-6">
 					<div class="ksl-kpi accent-warn">
 						<div class="lbl">Tháng khoá / sửa được</div>
 						<div class="val"><span id="k-locked">—</span> / <span id="k-open">—</span></div>
@@ -174,19 +225,46 @@
 			const allStas = D.flatStations(company);
 			const totalTrees = allStas.reduce((s, x) => s + (x.lots || []).reduce((a,l) => a + l.trees, 0), 0);
 			const staTrees = (sta.lots || []).reduce((a, l) => a + l.trees, 0);
-			const staPlan = Math.round(kp.total * (staTrees / totalTrees));
+			const staShare = staTrees / totalTrees;
+			const staPlan = Math.round(kp.total * staShare);
+			const supp = (company.supplementary || []).filter(s => s.date.startsWith(String(year))).reduce((s, x) => s + x.kg, 0);
+			const staSupp = Math.round(supp * staShare);
+			const eff = staPlan + staSupp;
+			const staStrive = company.strivePlans[year] ? Math.round(company.strivePlans[year].total * staShare) : 0;
+			const latestV = versions[versions.length - 1];
+			const pcts = (latestV && latestV.percents) ? latestV.percents : D.DEFAULT_MONTH_PERCENT;
 			const curM = year === D.currentYear ? D.currentMonth : (year < D.currentYear ? 12 : 0);
 			const parts = buildParts(year);
 			const totalPartsTrees = parts.reduce((s, p) => s + Math.round(p.lot.trees / p.lot.parts), 0);
 
-			document.getElementById('k-plan').innerHTML = D.fmtNum(staPlan) + '<span class="unit">kg</span>';
-			document.getElementById('k-plan-sub').textContent = D.fmtTon(staPlan);
+			// CHỈ TIÊU NĂM
+			document.getElementById('k-base').innerHTML = D.fmtNum(staPlan) + '<span class="unit">kg</span>';
+			document.getElementById('k-base-sub').textContent = D.fmtTon(staPlan);
+			document.getElementById('k-supp').innerHTML = D.fmtNum(staSupp) + '<span class="unit">kg</span>';
+			document.getElementById('k-supp-sub').textContent = staSupp ? `+${(staSupp/staPlan*100).toFixed(1)}% so với kế hoạch gốc` : 'Chưa nhận';
+			document.getElementById('k-eff').innerHTML = D.fmtNum(eff) + '<span class="unit">kg</span>';
+			document.getElementById('k-eff-sub').textContent = D.fmtTon(eff);
+			document.getElementById('k-strive').innerHTML = D.fmtNum(eff + staStrive) + '<span class="unit">kg</span>';
+			document.getElementById('k-strive-sub').textContent = staStrive ? `+${D.fmtNum(staStrive)} kg (+${(staStrive/staPlan*100).toFixed(1)}% phấn đấu thêm)` : '—';
+
+			// CHỈ TIÊU THÁNG
+			const displayMonth = curM > 0 ? curM : 1;
+			const mIdx = displayMonth - 1;
+			document.getElementById('month-section-label').textContent = `THÁNG ${displayMonth}/${year}`;
+			const mEff = Math.round(eff * pcts[mIdx] / 100);
+			const mStrive = staStrive ? Math.round(staStrive * pcts[mIdx] / 100) : 0;
+			document.getElementById('km-base').innerHTML = D.fmtNum(mEff) + '<span class="unit">kg</span>';
+			document.getElementById('km-base-sub').textContent = `${pcts[mIdx]}% kế hoạch hiệu lực`;
+			document.getElementById('km-total').innerHTML = D.fmtNum(mEff + mStrive) + '<span class="unit">kg</span>';
+			document.getElementById('km-eff-sub').textContent = mStrive ? `+${D.fmtNum(mStrive)} kg (+${(mStrive/mEff*100).toFixed(1)}% phấn đấu thêm)` : D.fmtTon(mEff);
+
+			// KPIs phụ
 			document.getElementById('k-parts').textContent = parts.length;
 			document.getElementById('k-parts-empty').textContent = parts.filter(p => !p.assigned).length;
-			const actual = D.mockMonthlyActual(staPlan, D.DEFAULT_MONTH_PERCENT);
-			const done = actual.slice(0, curM).reduce((s, a) => s + a.actual, 0);
+			const actualData = D.mockMonthlyActual(eff, pcts);
+			const done = actualData.slice(0, curM).reduce((s, a) => s + a.actual, 0);
 			document.getElementById('k-done').innerHTML = D.fmtNum(done) + '<span class="unit">kg</span>';
-			document.getElementById('k-done-sub').textContent = (done / staPlan * 100).toFixed(1) + '% kế hoạch năm';
+			document.getElementById('k-done-sub').textContent = `${(done/eff*100).toFixed(1)}% kế hoạch năm`;
 			document.getElementById('k-curm').textContent = curM || '—';
 			document.getElementById('k-locked').textContent = curM;
 			document.getElementById('k-open').textContent = 12 - curM;

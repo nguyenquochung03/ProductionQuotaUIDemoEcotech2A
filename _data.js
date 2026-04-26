@@ -120,11 +120,15 @@
     },
 
     // Số version phân bổ % tháng (thể hiện cơ chế lock + version)
+    // percents[i] = % kế hoạch tháng i+1, tính trên KẾ HOẠCH HIỆU LỰC (đã gộp bổ sung), tổng = 100
     monthlyVersions: {
       2026: [
-        { v: 1, createdAt: '2025-12-01', createdBy: 'Nguyễn Văn Minh', note: 'Phân bổ ban đầu' },
-        { v: 2, createdAt: '2026-02-14', createdBy: 'Nguyễn Văn Minh', note: 'Điều chỉnh % do tháng 1 hụt 12% — dồn sang Tháng 5 đến Tháng 11' },
-        { v: 3, createdAt: '2026-04-10', createdBy: 'Nguyễn Văn Minh', note: 'Điều chỉnh sau khi Tập đoàn giao thêm khoán bổ sung đợt 1' }
+        { v: 1, createdAt: '2025-12-01', createdBy: 'Nguyễn Văn Minh', note: 'Phân bổ ban đầu',
+          percents: [6, 0, 0, 8, 10, 11, 11, 12, 12, 11, 10, 9] },
+        { v: 2, createdAt: '2026-02-14', createdBy: 'Nguyễn Văn Minh', note: 'Điều chỉnh % do tháng 1 hụt 12% — dồn sang Tháng 5 đến Tháng 11',
+          percents: [6, 0, 0, 8, 10, 11, 11, 12, 12, 11, 10, 9] },
+        { v: 3, createdAt: '2026-04-10', createdBy: 'Nguyễn Văn Minh', note: 'Thu hẹp % tất cả tháng theo tỷ lệ khoán tăng (×base/hiệu lực) — chờ phân bổ phần bổ sung vào các tháng còn lại',
+          percents: [5.7, 0, 0, 7.6, 9.5, 10.4, 10.4, 11.4, 11.4, 10.4, 9.5, 8.5] }
       ]
     },
 
@@ -191,8 +195,10 @@
     },
     monthlyVersions: {
       2026: [
-        { v: 1, createdAt: '2025-11-25', createdBy: 'Trần Quốc Bảo', note: 'Phân bổ ban đầu' },
-        { v: 2, createdAt: '2026-03-08', createdBy: 'Trần Quốc Bảo', note: 'Điều chỉnh % các tháng sau do Tháng 1, Tháng 2 mưa trái mùa' }
+        { v: 1, createdAt: '2025-11-25', createdBy: 'Trần Quốc Bảo', note: 'Phân bổ ban đầu',
+          percents: [6, 0, 0, 8, 10, 11, 11, 12, 12, 11, 10, 9] },
+        { v: 2, createdAt: '2026-03-08', createdBy: 'Trần Quốc Bảo', note: 'Điều chỉnh % các tháng sau do Tháng 1, Tháng 2 mưa trái mùa — dồn bù sang Tháng 6-12',
+          percents: [6, 0, 0, 8, 10, 12, 12, 13, 12, 11, 10, 6] }
       ]
     },
     supplementary: [
@@ -243,7 +249,8 @@
     },
     monthlyVersions: {
       2026: [
-        { v: 1, createdAt: '2025-11-28', createdBy: 'Phạm Thành Long', note: 'Phân bổ ban đầu' }
+        { v: 1, createdAt: '2025-11-28', createdBy: 'Phạm Thành Long', note: 'Phân bổ ban đầu',
+          percents: [6, 0, 0, 8, 10, 11, 11, 12, 12, 11, 10, 9] }
       ]
     },
     supplementary: [],

@@ -110,6 +110,7 @@
 					<div class="table-responsive">
 						<table class="ksl-monthly-grid w-100" id="tbl-monthly"></table>
 					</div>
+					<div id="unallocated-note"></div>
 				</div>
 				<div class="card-arrow">
 					<div class="card-arrow-top-left"></div><div class="card-arrow-top-right"></div>
@@ -196,50 +197,69 @@
 			document.getElementById('k-base-sub').textContent = D.fmtTon(staPlan);
 			document.getElementById('k-supp').innerHTML = D.fmtNum(staSupp) + '<span class="unit">kg</span>';
 			document.getElementById('k-supp-sub').textContent = staSupp ? `+${(staSupp/staPlan*100).toFixed(1)}% so với kế hoạch gốc` : '—';
-			document.getElementById('k-strive').innerHTML = D.fmtNum(staStrive) + '<span class="unit">kg</span>';
-			document.getElementById('k-strive-sub').textContent = staStrive ? `+${(staStrive/staPlan*100).toFixed(1)}% phấn đấu thêm` : '—';
+			document.getElementById('k-strive').innerHTML = D.fmtNum(eff + staStrive) + '<span class="unit">kg</span>';
+			document.getElementById('k-strive-sub').textContent = staStrive ? `+${D.fmtNum(staStrive)} kg (+${(staStrive/staPlan*100).toFixed(1)}% phấn đấu thêm)` : '—';
 			document.getElementById('k-eff').innerHTML = D.fmtNum(eff) + '<span class="unit">kg</span>';
 			document.getElementById('k-eff-sub').textContent = D.fmtTon(eff);
 
 			// Monthly
-			const pcts = D.DEFAULT_MONTH_PERCENT;
+			const vers = company.monthlyVersions[year] || [];
+			const latest = vers[vers.length - 1];
+			const pcts = (latest && latest.percents) ? latest.percents : D.DEFAULT_MONTH_PERCENT;
 			const curM = year === D.currentYear ? D.currentMonth : (year < D.currentYear ? 12 : 0);
-			const actual = D.mockMonthlyActual(staPlan, pcts);
+			const actual = D.mockMonthlyActual(eff, pcts);
 
 			// KPI tháng hiện tại
 			const displayMonth = curM > 0 ? curM : 1;
 			const mIdx = displayMonth - 1;
 			document.getElementById('month-section-label').textContent = `THÁNG ${displayMonth}/${year}`;
-			const mPlan = actual[mIdx].plan;
-			const mSupp = Math.round(staSupp * pcts[mIdx] / 100);
+			const mEff = actual[mIdx].plan; // = eff × pcts[mIdx] / 100 (đã gộp bổ sung)
 			const mStrive = staStrive ? Math.round(staStrive * pcts[mIdx] / 100) : 0;
-			const mEff = mPlan + mSupp;
-			document.getElementById('km-base').innerHTML = D.fmtNum(mPlan) + '<span class="unit">kg</span>';
-			document.getElementById('km-base-sub').textContent = `${pcts[mIdx]}% kế hoạch năm`;
-			document.getElementById('km-supp').innerHTML = D.fmtNum(mSupp) + '<span class="unit">kg</span>';
-			document.getElementById('km-supp-sub').textContent = mSupp ? `+${(mSupp/mPlan*100).toFixed(1)}% so với kế hoạch tháng gốc` : 'Chưa nhận';
+			document.getElementById('km-base').innerHTML = D.fmtNum(mEff) + '<span class="unit">kg</span>';
+			document.getElementById('km-base-sub').textContent = `${pcts[mIdx]}% kế hoạch hiệu lực`;
 			document.getElementById('km-strive').innerHTML = D.fmtNum(mStrive) + '<span class="unit">kg</span>';
-			document.getElementById('km-strive-sub').textContent = mStrive ? `+${(mStrive/mPlan*100).toFixed(1)}% phấn đấu thêm` : '—';
+			document.getElementById('km-strive-sub').textContent = mStrive ? `+${(mStrive/mEff*100).toFixed(1)}% phấn đấu thêm` : '—';
 			document.getElementById('km-eff').innerHTML = D.fmtNum(mEff) + '<span class="unit">kg</span>';
 			document.getElementById('km-total').innerHTML = D.fmtNum(mEff + mStrive) + '<span class="unit">kg</span>';
-			document.getElementById('km-eff-sub').textContent = D.fmtTon(mEff + mStrive);
+			document.getElementById('km-eff-sub').textContent = mStrive ? `+${D.fmtNum(mStrive)} kg (+${(mStrive/mEff*100).toFixed(1)}% phấn đấu thêm)` : D.fmtTon(mEff);
 
-			let html = '<thead><tr><th class="sticky-col">Tháng</th><th class="text-end">% Kế hoạch</th><th class="text-end">Kế hoạch (kg)</th><th class="text-end">Bổ sung</th><th class="text-end">Hiệu lực</th><th class="text-end">Thực hiện</th><th class="text-end">% đạt</th></tr></thead><tbody>';
+			let html = '<thead><tr><th class="sticky-col">Tháng</th><th class="text-end">% Kế hoạch</th><th class="text-end">Kế hoạch hiệu lực (kg)</th><th class="text-end">Thực hiện</th><th class="text-end">% đạt</th></tr></thead><tbody>';
 			actual.forEach((m, i) => {
 				const cls = (i+1) < curM ? 'month-past' : ((i+1) === curM ? 'month-current' : 'month-future');
-				const suppM = Math.round(staSupp * pcts[i] / 100);
-				const eff2 = m.plan + suppM;
-				const pct = m.actual ? (m.actual / eff2 * 100) : null;
+				const pct = m.actual ? (m.actual / m.plan * 100) : null;
 				const pc = !pct ? '' : pct >= 100 ? 'text-success' : pct >= 85 ? 'text-warning' : 'text-danger';
 				html += `<tr><td class="sticky-col"><strong>${D.MONTHS_VN[i]}</strong></td>
 					<td class="text-end ${cls}">${pcts[i]}%</td>
-					<td class="text-end ${cls}">${D.fmtNum(m.plan)}</td>
-					<td class="text-end ${cls} text-info">${suppM ? D.fmtNum(suppM) : '—'}</td>
-					<td class="text-end ${cls} fw-bold">${D.fmtNum(eff2)}</td>
+					<td class="text-end ${cls} fw-bold">${D.fmtNum(m.plan)}</td>
 					<td class="text-end ${cls}">${m.actual ? D.fmtNum(m.actual) : '—'}</td>
 					<td class="text-end ${cls} fw-bold ${pc}">${pct ? pct.toFixed(1)+'%' : '—'}</td></tr>`;
 			});
+			const pctSum = pcts.reduce((a, b) => a + b, 0);
+			const unallocatedPct = Math.max(0, 100 - pctSum);
+			const unallocatedKg = Math.round(eff * unallocatedPct / 100);
+			const allocatedKg = actual.reduce((s, m) => s + m.plan, 0);
+			const totalA = actual.reduce((s, m) => s + m.actual, 0);
+			const totalPctLabel = unallocatedPct > 0.05
+				? `${pctSum.toFixed(1)}% <span class="text-warning">(còn ${unallocatedPct.toFixed(1)}% chưa phân bổ)</span>`
+				: '100%';
+			html += `<tr class="total-row"><td class="sticky-col">TỔNG GA</td>
+				<td class="text-end">${totalPctLabel}</td>
+				<td class="text-end text-theme">${D.fmtNum(allocatedKg)}${unallocatedPct > 0.05 ? ` <span class="text-inverse text-opacity-40">/ ${D.fmtNum(eff)}</span>` : ''}</td>
+				<td class="text-end">${D.fmtNum(totalA)}</td>
+				<td class="text-end">${(totalA/eff*100).toFixed(1)}%</td></tr>`;
 			document.getElementById('tbl-monthly').innerHTML = html + '</tbody>';
+
+			const noteEl = document.getElementById('unallocated-note');
+			if (unallocatedPct > 0.05) {
+				noteEl.innerHTML = `<div class="ksl-note warn mt-3 mb-0">
+					<i class="bi bi-exclamation-triangle me-1"></i>
+					<strong>Chưa phân bổ vào tháng:</strong> còn <strong>${unallocatedPct.toFixed(1)}%</strong>
+					(${D.fmtNum(unallocatedKg)} kg) từ khoán bổ sung chưa được đưa vào tháng cụ thể.
+					Công ty cần tạo phiên bản mới và điều chỉnh % các tháng còn lại để tổng đạt 100%.
+				</div>`;
+			} else {
+				noteEl.innerHTML = '';
+			}
 
 			// Phấn đấu theo lô
 			const lots = sta.lots || [];
