@@ -16,7 +16,7 @@
 				<div class="page-icon"><i class="bi bi-file-earmark-check"></i></div>
 				<div>
 					<h1>Xem kế hoạch được giao từ Đội</h1>
-					<div class="subtitle">Cấp Ga/Tổ · Read-only · Khoán năm + % 12 tháng + Phấn đấu + danh sách phần cây</div>
+					<div class="subtitle">Cấp Ga/Tổ · Read-only · Khoán năm + % 12 tháng + Phấn đấu gán theo lô · Giao từ Đội trưởng</div>
 				</div>
 			</div>
 
@@ -37,8 +37,9 @@
 				<select class="form-select form-select-sm w-auto" id="sel-year"></select>
 			</div>
 
-			<!-- Hàng chỉ số tổng quan -->
-			<div class="row g-2 mb-3">
+			<!-- Hàng chỉ số tổng quan — Năm -->
+			<div class="small fw-bold text-inverse text-opacity-40 mb-1 ps-1">CHỈ TIÊU NĂM</div>
+			<div class="row g-2 mb-2">
 				<div class="col-lg-3 col-md-6">
 					<div class="ksl-kpi accent-theme">
 						<div class="lbl">Kế hoạch năm Ga (gốc)</div>
@@ -69,6 +70,39 @@
 				</div>
 			</div>
 
+			<!-- Hàng chỉ số tổng quan — Tháng hiện tại -->
+			<div class="small fw-bold text-inverse text-opacity-40 mb-1 ps-1">CHỈ TIÊU <span id="month-section-label">THÁNG HIỆN TẠI</span></div>
+			<div class="row g-2 mb-3">
+				<div class="col-lg-3 col-md-6">
+					<div class="ksl-kpi accent-theme">
+						<div class="lbl">Kế hoạch tháng Ga (gốc)</div>
+						<div class="val" id="km-base">—</div>
+						<div class="sub" id="km-base-sub">—</div>
+					</div>
+				</div>
+				<div class="col-lg-3 col-md-6">
+					<div class="ksl-kpi accent-info">
+						<div class="lbl">Bổ sung tháng</div>
+						<div class="val" id="km-supp">—</div>
+						<div class="sub" id="km-supp-sub">—</div>
+					</div>
+				</div>
+				<div class="col-lg-3 col-md-6">
+					<div class="ksl-kpi">
+						<div class="lbl">Phấn đấu tháng</div>
+						<div class="val" id="km-strive">—</div>
+						<div class="sub" id="km-strive-sub">—</div>
+					</div>
+				</div>
+				<div class="col-lg-3 col-md-6">
+					<div class="ksl-kpi accent-theme">
+						<div class="lbl">Chỉ tiêu hiệu lực tháng</div>
+						<div class="val" id="km-eff">—</div>
+						<div class="sub" id="km-eff-sub">—</div>
+					</div>
+				</div>
+			</div>
+
 			<!-- % 12 tháng -->
 			<div class="card mb-3">
 				<div class="card-body">
@@ -83,26 +117,26 @@
 				</div>
 			</div>
 
-			<!-- Danh sách phần cây -->
-			<div class="card mb-3">
+			<!-- Phấn đấu theo lô -->
+			<div class="card mb-3" id="strive-card">
 				<div class="card-body">
-					<h5 class="fw-bold mb-3"><i class="bi bi-tree me-2 text-theme"></i>Danh sách phần cây thuộc Ga</h5>
+					<h5 class="fw-bold mb-3"><i class="bi bi-graph-up-arrow me-2 text-theme"></i>Phấn đấu được gán theo từng lô</h5>
 					<div class="table-responsive">
 						<table class="table table-ksl align-middle mb-0">
 							<thead>
 								<tr>
 									<th>Lô</th>
-									<th>Phần cây</th>
-									<th>Công nhân phụ trách</th>
-									<th class="text-end">Số cây</th>
-									<th class="text-end">Kế hoạch khoán năm (kg)</th>
+									<th class="text-end">Kế hoạch khoán (kg)</th>
 									<th class="text-end">Phấn đấu (kg)</th>
 									<th class="text-end">Tổng chỉ tiêu (kg)</th>
-									<th>Trạng thái</th>
+									<th>Ghi chú</th>
 								</tr>
 							</thead>
-							<tbody id="parts-tbody"></tbody>
+							<tbody id="strive-tbody"></tbody>
 						</table>
+					</div>
+					<div class="ksl-note mt-3 mb-0">
+						<strong><i class="bi bi-lightbulb me-1"></i>Ghi chú:</strong> Đội trưởng đề xuất, Phòng Kỹ thuật duyệt và gán phấn đấu cho từng lô. Lô không được chọn vẫn hiển thị nhưng phấn đấu = 0.
 					</div>
 				</div>
 				<div class="card-arrow">
@@ -145,9 +179,6 @@
 		sel.innerHTML = years.map(y => `<option value="${y}" ${y === D.currentYear ? 'selected' : ''}>Năm ${y}</option>`).join('');
 		sel.addEventListener('change', render);
 
-		// Mock công nhân
-		const WORKERS = ['Nguyễn Văn A', 'Trần Thị B', 'Lê Văn C', 'Phạm Văn D', 'Hoàng Thị E', 'Võ Văn F', 'Đặng Thị G', 'Bùi Văn H', 'Đỗ Thị I', 'Ngô Văn K'];
-
 		function render() {
 			const year = parseInt(sel.value, 10);
 			const kp = company.plans[year];
@@ -173,8 +204,26 @@
 			// Monthly
 			const pcts = D.DEFAULT_MONTH_PERCENT;
 			const curM = year === D.currentYear ? D.currentMonth : (year < D.currentYear ? 12 : 0);
-			let html = '<thead><tr><th class="sticky-col">Tháng</th><th class="text-end">% Kế hoạch</th><th class="text-end">Kế hoạch (kg)</th><th class="text-end">Bổ sung</th><th class="text-end">Hiệu lực</th><th class="text-end">Thực hiện</th><th class="text-end">% đạt</th></tr></thead><tbody>';
 			const actual = D.mockMonthlyActual(staPlan, pcts);
+
+			// KPI tháng hiện tại
+			const displayMonth = curM > 0 ? curM : 1;
+			const mIdx = displayMonth - 1;
+			document.getElementById('month-section-label').textContent = `THÁNG ${displayMonth}/${year}`;
+			const mPlan = actual[mIdx].plan;
+			const mSupp = Math.round(staSupp * pcts[mIdx] / 100);
+			const mStrive = staStrive ? Math.round(staStrive * pcts[mIdx] / 100) : 0;
+			const mEff = mPlan + mSupp;
+			document.getElementById('km-base').innerHTML = D.fmtNum(mPlan) + '<span class="unit">kg</span>';
+			document.getElementById('km-base-sub').textContent = `${pcts[mIdx]}% kế hoạch năm`;
+			document.getElementById('km-supp').innerHTML = D.fmtNum(mSupp) + '<span class="unit">kg</span>';
+			document.getElementById('km-supp-sub').textContent = mSupp ? `+${(mSupp/mPlan*100).toFixed(1)}% so với kế hoạch tháng gốc` : 'Chưa nhận';
+			document.getElementById('km-strive').innerHTML = D.fmtNum(mStrive) + '<span class="unit">kg</span>';
+			document.getElementById('km-strive-sub').textContent = mStrive ? 'Gán theo từng lô' : '—';
+			document.getElementById('km-eff').innerHTML = D.fmtNum(mEff) + '<span class="unit">kg</span>';
+			document.getElementById('km-eff-sub').textContent = D.fmtTon(mEff);
+
+			let html = '<thead><tr><th class="sticky-col">Tháng</th><th class="text-end">% Kế hoạch</th><th class="text-end">Kế hoạch (kg)</th><th class="text-end">Bổ sung</th><th class="text-end">Hiệu lực</th><th class="text-end">Thực hiện</th><th class="text-end">% đạt</th></tr></thead><tbody>';
 			actual.forEach((m, i) => {
 				const cls = (i+1) < curM ? 'month-past' : ((i+1) === curM ? 'month-current' : 'month-future');
 				const suppM = Math.round(staSupp * pcts[i] / 100);
@@ -191,35 +240,21 @@
 			});
 			document.getElementById('tbl-monthly').innerHTML = html + '</tbody>';
 
-			// Phần cây list
-			const partsBox = document.getElementById('parts-tbody');
-			const allParts = [];
-			(sta.lots || []).forEach(lot => {
-				for (let i = 1; i <= lot.parts; i++) {
-					allParts.push({ lot, partNo: i, workerName: WORKERS[(lot.name.length + i) % WORKERS.length] });
-				}
-			});
-			const lotTrees = {}; (sta.lots || []).forEach(l => lotTrees[l.id] = l.trees);
-			const totalPartsTrees = allParts.reduce((s, p) => s + (lotTrees[p.lot.id] / p.lot.parts), 0);
-			partsBox.innerHTML = allParts.map((p, i) => {
-				const treesPart = Math.round(lotTrees[p.lot.id] / p.lot.parts);
-				const partPlan = Math.round(staPlan * (treesPart / totalPartsTrees));
-				const age = year - p.lot.year;
-				const accept = age < 20 && (i % 5 !== 4);
-				const partStrive = accept && staStrive ? Math.round(partPlan * (company.strivePlans[year].percent || 8) / 100) : 0;
-				const assigned = i % 14 !== 13; // 1 trong 14 phần cây trống
-				const status = !assigned
-					? '<span class="ksl-status danger"><i class="bi bi-exclamation-circle"></i>Phần cây trống</span>'
-					: '<span class="ksl-status locked"><i class="bi bi-person-check"></i>Đã gán công nhân</span>';
+			// Phấn đấu theo lô
+			const lots = sta.lots || [];
+			const lotsTotalTrees = lots.reduce((s, l) => s + l.trees, 0);
+			document.getElementById('strive-tbody').innerHTML = lots.map((l, i) => {
+				const lotBase = Math.round(staPlan * (l.trees / lotsTotalTrees));
+				const age = year - l.year;
+				const accept = age < 20 && i % 4 !== 3;
+				const lotStrive = accept && staStrive ? Math.round(lotBase * (company.strivePlans[year]?.percent || 8) / 100) : 0;
+				const note = !accept ? '<span class="text-inverse text-opacity-50">Không nhận (lô yếu/cây già)</span>' : '';
 				return `<tr>
-					<td><strong>${p.lot.name}</strong><div class="small text-inverse text-opacity-50">${p.lot.seedling} · ${age} năm</div></td>
-					<td>Phần ${p.partNo}</td>
-					<td>${assigned ? p.workerName : '<span class="text-inverse text-opacity-40">— (chưa gán)</span>'}</td>
-					<td class="text-end">${treesPart}</td>
-					<td class="text-end">${D.fmtNum(partPlan)}</td>
-					<td class="text-end ${partStrive ? 'text-success fw-bold' : 'text-inverse text-opacity-40'}">${partStrive ? '+' + D.fmtNum(partStrive) : '—'}</td>
-					<td class="text-end fw-bold">${D.fmtNum(partPlan + partStrive)}</td>
-					<td>${status}</td>
+					<td><strong>${l.name}</strong><div class="small text-inverse text-opacity-50">${l.seedling} · ${age} năm</div></td>
+					<td class="text-end">${D.fmtNum(lotBase)}</td>
+					<td class="text-end ${lotStrive ? 'text-success fw-bold' : 'text-inverse text-opacity-40'}">${lotStrive ? '+' + D.fmtNum(lotStrive) : '—'}</td>
+					<td class="text-end fw-bold">${D.fmtNum(lotBase + lotStrive)}</td>
+					<td class="small">${note}</td>
 				</tr>`;
 			}).join('');
 		}

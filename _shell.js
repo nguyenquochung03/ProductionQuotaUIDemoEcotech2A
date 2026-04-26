@@ -19,15 +19,15 @@
     { id: 'cty-2-1', group: 'cty', num: '2.1', title: 'Phân bổ % tháng cho đội',   href: 'cty-2-1-phan-bo-thang.html',       section: 'Điều hành tháng', icon: 'bi-calendar3' },
     { id: 'cty-2-2', group: 'cty', num: '2.2', title: 'Khoán bổ sung',             href: 'cty-2-2-khoan-bo-sung.html',       section: 'Điều hành tháng', icon: 'bi-plus-square' },
     { id: 'cty-2-3', group: 'cty', num: '2.3', title: 'Cân đối sản lượng đội',    href: 'cty-2-3-can-doi-san-luong.html',   section: 'Điều hành tháng', icon: 'bi-arrow-left-right' },
-    { id: 'cty-3-1', group: 'cty', num: '3.1', title: 'Theo dõi tiến độ công ty', href: 'cty-3-1-dashboard.html',           section: 'Bảng điều khiển', icon: 'bi-speedometer2' },
+    { id: 'cty-3-1', group: 'cty', num: '3.1', title: 'Theo dõi tiến độ công ty', href: 'cty-3-1-dashboard.html',           section: 'Dashboard', icon: 'bi-speedometer2' },
     // ĐỘI
     { id: 'doi-1-1', group: 'doi', num: '1.1', title: 'Xem kế hoạch từ Công ty',           href: 'doi-1-1-xem-kh.html',              section: 'Điều hành tháng', icon: 'bi-file-earmark-check' },
     { id: 'doi-1-2', group: 'doi', num: '1.2', title: 'Phân bổ % tháng cho Ga',             href: 'doi-1-2-phan-bo-thang.html',       section: 'Điều hành tháng', icon: 'bi-calendar3' },
-    { id: 'doi-2-1', group: 'doi', num: '2.1', title: 'Theo dõi Ga trong Đội',              href: 'doi-2-1-dashboard.html',           section: 'Bảng điều khiển', icon: 'bi-speedometer2' },
+    { id: 'doi-2-1', group: 'doi', num: '2.1', title: 'Theo dõi Ga trong Đội',              href: 'doi-2-1-dashboard.html',           section: 'Dashboard', icon: 'bi-speedometer2' },
     // GA
     { id: 'ga-1-1', group: 'ga', num: '1.1', title: 'Xem kế hoạch từ Đội',                  href: 'ga-1-1-xem-kh.html',               section: 'Điều hành tháng', icon: 'bi-file-earmark-check' },
     { id: 'ga-1-2', group: 'ga', num: '1.2', title: 'Phân bổ % tháng cho công nhân',        href: 'ga-1-2-phan-bo-thang.html',        section: 'Điều hành tháng', icon: 'bi-people' },
-    { id: 'ga-2-1', group: 'ga', num: '2.1', title: 'Theo dõi phần cây và công nhân',       href: 'ga-2-1-dashboard.html',            section: 'Bảng điều khiển', icon: 'bi-speedometer2' }
+    { id: 'ga-2-1', group: 'ga', num: '2.1', title: 'Theo dõi phần cây và công nhân',       href: 'ga-2-1-dashboard.html',            section: 'Dashboard', icon: 'bi-speedometer2' }
   ];
 
   const GROUPS = {

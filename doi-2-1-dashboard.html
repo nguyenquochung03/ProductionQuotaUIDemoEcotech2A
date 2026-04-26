@@ -1,8 +1,8 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi" data-bs-theme="dark">
 <head>
 	<meta charset="utf-8">
-	<title>Khoán sản lượng | Đội 2.1 Bảng điều khiển</title>
+	<title>Khoán sản lượng | Đội 2.1 Dashboard</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link href="hud_admin_v2.3/template_html/dist/assets/css/vendor.min.css" rel="stylesheet">
 	<link href="hud_admin_v2.3/template_html/dist/assets/css/app.min.css" rel="stylesheet">
@@ -20,21 +20,16 @@
 				</div>
 			</div>
 
+			<!-- Toolbar -->
 			<div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
 				<select class="form-select form-select-sm w-auto" id="sel-year"></select>
-				<div class="btn-group btn-group-sm" role="group">
-					<input type="radio" class="btn-check" id="v-month" name="vmode" checked>
-					<label class="btn btn-outline-inverse" for="v-month">Theo tháng</label>
-					<input type="radio" class="btn-check" id="v-year" name="vmode">
-					<label class="btn btn-outline-inverse" for="v-year">Theo năm</label>
-				</div>
 				<div class="ms-auto d-flex gap-2">
 					<button class="btn btn-sm btn-outline-inverse"><i class="bi bi-file-earmark-excel me-1"></i>Xuất Excel</button>
 				</div>
 			</div>
 
-			<!-- Nhóm: Kế hoạch -->
-			<div class="small fw-bold text-inverse text-opacity-40 mb-1 ps-1">KẾ HOẠCH</div>
+			<!-- Nhóm: Kế hoạch năm -->
+			<div class="small fw-bold text-inverse text-opacity-40 mb-1 ps-1">KẾ HOẠCH NĂM</div>
 			<div class="row g-2 mb-2">
 				<div class="col-lg-4 col-md-4 col-6">
 					<div class="ksl-kpi">
@@ -59,9 +54,9 @@
 				</div>
 			</div>
 
-			<!-- Nhóm: Thực hiện -->
-			<div class="small fw-bold text-inverse text-opacity-40 mb-1 ps-1">THỰC HIỆN</div>
-			<div class="row g-2 mb-3">
+			<!-- Nhóm: Thực hiện năm -->
+			<div class="small fw-bold text-inverse text-opacity-40 mb-1 ps-1">THỰC HIỆN NĂM</div>
+			<div class="row g-2 mb-2">
 				<div class="col-lg-3 col-md-3 col-6">
 					<div class="ksl-kpi accent-info">
 						<div class="lbl">Luỹ kế thực hiện</div>
@@ -92,6 +87,54 @@
 				</div>
 			</div>
 
+			<!-- Nhóm: Tháng hiện tại -->
+			<div class="small fw-bold text-inverse text-opacity-40 mb-1 ps-1"><span id="month-label">THÁNG HIỆN TẠI</span></div>
+			<div class="row g-2 mb-3">
+				<div class="col-lg-4 col-md-4 col-6">
+					<div class="ksl-kpi accent-theme">
+						<div class="lbl">Chỉ tiêu tháng (gốc)</div>
+						<div class="val" id="km-plan">—</div>
+						<div class="sub" id="km-plan-sub">—</div>
+					</div>
+				</div>
+				<div class="col-lg-4 col-md-4 col-6">
+					<div class="ksl-kpi accent-theme">
+						<div class="lbl">Tổng chỉ tiêu (có phấn đấu)</div>
+						<div class="val" id="km-total">—</div>
+						<div class="sub" id="km-total-sub">—</div>
+					</div>
+				</div>
+				<div class="col-lg-4 col-md-4 col-6">
+					<div class="ksl-kpi accent-info">
+						<div class="lbl">Lũy kế đến hôm nay</div>
+						<div class="val" id="km-actual">—</div>
+						<div class="sub" id="km-actual-sub">—</div>
+					</div>
+				</div>
+				<div class="col-lg-4 col-md-4 col-6">
+					<div class="ksl-kpi accent-warn">
+						<div class="lbl">% hoàn thành tháng</div>
+						<div class="val" id="km-pct">—</div>
+						<div class="sub" id="km-pct-sub">—</div>
+					</div>
+				</div>
+				<div class="col-lg-4 col-md-4 col-6">
+					<div class="ksl-kpi">
+						<div class="lbl">Còn lại phải đạt</div>
+						<div class="val" id="km-remaining">—</div>
+						<div class="sub" id="km-remaining-sub">—</div>
+					</div>
+				</div>
+				<div class="col-lg-4 col-md-4 col-6">
+					<div class="ksl-kpi">
+						<div class="lbl">Cần cạo mỗi ngày</div>
+						<div class="val" id="km-daily">—</div>
+						<div class="sub" id="km-daily-sub">—</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Chart + Ranking -->
 			<div class="row mb-3">
 				<div class="col-lg-8 mb-3">
 					<div class="card h-100">
@@ -119,11 +162,29 @@
 				</div>
 			</div>
 
+			<!-- Bảng theo tháng -->
 			<div class="card mb-3">
 				<div class="card-body">
-					<h5 class="fw-bold mb-3"><i class="bi bi-table me-2 text-theme"></i>So sánh kế hoạch với thực hiện — <span id="tbl-title">Theo tháng</span></h5>
+					<div class="d-flex align-items-center mb-3 flex-wrap gap-2">
+						<h5 class="fw-bold mb-0 flex-1"><i class="bi bi-calendar3 me-2 text-theme"></i>So sánh kế hoạch với thực hiện — <span id="tbl-month-year">Theo tháng</span></h5>
+						<span class="small text-inverse text-opacity-50">Đỏ: &lt;85% · Vàng: 85-99% · Xanh: ≥100%</span>
+					</div>
 					<div class="table-responsive">
-						<table class="table table-ksl align-middle mb-0" id="tbl-compare"></table>
+						<table class="table table-ksl align-middle mb-0" id="tbl-month"></table>
+					</div>
+				</div>
+				<div class="card-arrow">
+					<div class="card-arrow-top-left"></div><div class="card-arrow-top-right"></div>
+					<div class="card-arrow-bottom-left"></div><div class="card-arrow-bottom-right"></div>
+				</div>
+			</div>
+
+			<!-- Bảng theo năm -->
+			<div class="card mb-3">
+				<div class="card-body">
+					<h5 class="fw-bold mb-3"><i class="bi bi-bar-chart-line me-2 text-theme"></i>So sánh theo năm</h5>
+					<div class="table-responsive">
+						<table class="table table-ksl align-middle mb-0" id="tbl-year"></table>
 					</div>
 				</div>
 				<div class="card-arrow">
@@ -153,9 +214,6 @@
 		const years = Object.keys(company.plans).map(Number).sort((a,b)=>b-a);
 		document.getElementById('sel-year').innerHTML = years.map(y => `<option value="${y}" ${y === D.currentYear ? 'selected' : ''}>Năm ${y}</option>`).join('');
 		document.getElementById('k-team').textContent = team.name;
-		let currentView = 'month';
-		document.getElementById('v-month').onchange = () => { currentView = 'month'; render(); };
-		document.getElementById('v-year').onchange = () => { currentView = 'year'; render(); };
 		document.getElementById('sel-year').onchange = render;
 
 		let chart = null;
@@ -179,7 +237,6 @@
 
 			const totalPlan = staData.reduce((s, x) => s + x.plan, 0);
 			const totalDone = staData.reduce((s, x) => s + x.done, 0);
-			// Tính bổ sung và phấn đấu của Đội (chia theo tỷ lệ)
 			const suppTotal = (company.supplementary || []).filter(s => s.date.startsWith(String(year))).reduce((s, x) => s + x.kg, 0);
 			const striveTotal = company.strivePlans[year] ? company.strivePlans[year].total : 0;
 			const teamSupp = Math.round(suppTotal * (1/teams.length) * (0.9 + idx * 0.1));
@@ -214,10 +271,71 @@
 				</div>`;
 			}).join('');
 
-			// Chart stacked lũy kế
+			// Chart
 			if (chart) chart.destroy();
 			const monthly = D.mockMonthlyActual(teamPlan, D.DEFAULT_MONTH_PERCENT);
 			const curM = year === D.currentYear ? D.currentMonth : 12;
+
+			// KPI tháng hiện tại
+			{
+				const displayMonth = curM > 0 ? curM : 1;
+				const mIdx = displayMonth - 1;
+				document.getElementById('month-label').textContent = `THÁNG ${displayMonth}/${year}`;
+
+				const today = new Date();
+				const daysInMonth = new Date(year, displayMonth, 0).getDate();
+				const isCurrentMonth = year === D.currentYear && displayMonth === D.currentMonth;
+				const dayOfMonth = isCurrentMonth ? today.getDate() : daysInMonth;
+				const daysRemaining = isCurrentMonth ? Math.max(0, daysInMonth - dayOfMonth) : 0;
+
+				const mPlanVal = monthly[mIdx].plan;
+				const mEffVal = Math.round(mPlanVal * (teamEffective / teamPlan));
+				const mStriveVal = teamStrive ? Math.round(teamStrive * D.DEFAULT_MONTH_PERCENT[mIdx] / 100) : 0;
+				const mTotalVal = mEffVal + mStriveVal;
+
+				const fullMonthActual = monthly[mIdx].actual;
+				const monthIsDone = year < D.currentYear || (year === D.currentYear && displayMonth < D.currentMonth);
+				const mActualVal = monthIsDone ? fullMonthActual
+					: isCurrentMonth ? Math.round(fullMonthActual * (dayOfMonth / daysInMonth) * 0.88) : 0;
+
+				const mPctVal = mActualVal ? (mActualVal / mEffVal * 100) : 0;
+				const remainingVal = Math.max(0, mEffVal - mActualVal);
+				const dailyNeeded = daysRemaining > 0 ? Math.ceil(remainingVal / daysRemaining) : 0;
+				const pctCls = mPctVal >= 100 ? 'text-success' : mPctVal >= 85 ? 'text-warning' : mPctVal > 0 ? 'text-danger' : '';
+
+				document.getElementById('km-plan').innerHTML = D.fmtNum(mPlanVal) + '<span class="unit">kg</span>';
+				document.getElementById('km-plan-sub').textContent = `${D.DEFAULT_MONTH_PERCENT[mIdx]}% kế hoạch năm · ${D.fmtTon(mPlanVal)}`;
+
+				document.getElementById('km-total').innerHTML = D.fmtNum(mTotalVal) + '<span class="unit">kg</span>';
+				document.getElementById('km-total-sub').textContent = mStriveVal
+					? `Phấn đấu +${D.fmtNum(mStriveVal)} kg (+${(mStriveVal/mPlanVal*100).toFixed(1)}%)`
+					: 'Chưa có phấn đấu tháng';
+
+				document.getElementById('km-actual').innerHTML = mActualVal
+					? D.fmtNum(mActualVal) + '<span class="unit">kg</span>'
+					: '<span class="text-inverse text-opacity-40">Đang cạo</span>';
+				document.getElementById('km-actual-sub').textContent = isCurrentMonth
+					? `Ngày ${dayOfMonth}/${displayMonth}/${year} · ${mPctVal.toFixed(1)}% chỉ tiêu`
+					: (mActualVal ? `${mPctVal.toFixed(1)}% chỉ tiêu` : '—');
+
+				document.getElementById('km-pct').innerHTML = mPctVal
+					? `<span class="${pctCls}">${mPctVal.toFixed(1)}<span class="unit">%</span></span>`
+					: '<span class="text-inverse text-opacity-40">—</span>';
+				document.getElementById('km-pct-sub').textContent = mPctVal >= 100 ? 'Đạt / vượt' : mPctVal >= 85 ? 'Gần đạt' : mActualVal ? 'Đang hụt tiến độ' : 'Chưa có số liệu';
+
+				document.getElementById('km-remaining').innerHTML = D.fmtNum(remainingVal) + '<span class="unit">kg</span>';
+				document.getElementById('km-remaining-sub').textContent = isCurrentMonth
+					? `Còn ${daysRemaining} ngày trong tháng`
+					: daysRemaining === 0 ? 'Tháng đã kết thúc' : `${daysRemaining} ngày còn lại`;
+
+				document.getElementById('km-daily').innerHTML = dailyNeeded > 0
+					? D.fmtNum(dailyNeeded) + '<span class="unit">kg/ngày</span>'
+					: '<span class="text-inverse text-opacity-40">—</span>';
+				document.getElementById('km-daily-sub').textContent = dailyNeeded > 0
+					? 'Tối thiểu để đạt chỉ tiêu'
+					: (mPctVal >= 100 ? 'Đã hoàn thành' : 'Tháng đã kết thúc');
+			}
+
 			const cumP = []; let cp = 0;
 			monthly.forEach(m => { cp += m.plan; cumP.push(cp); });
 			const cumA = []; let ca = 0;
@@ -237,40 +355,45 @@
 			});
 			chart.render();
 
-			// Compare table
-			const tbl = document.getElementById('tbl-compare');
-			if (currentView === 'month') {
-				document.getElementById('tbl-title').textContent = 'Theo tháng (năm ' + year + ')';
-				tbl.innerHTML = `<thead><tr><th>Tháng</th>${staData.map(x => `<th class="text-end">${x.s.name}</th>`).join('')}<th class="text-end">Tổng Đội</th></tr></thead><tbody>`
-					+ D.MONTHS_VN.map((mn, i) => {
-						const row = staData.map(x => {
-							const plan = Math.round(x.plan * D.DEFAULT_MONTH_PERCENT[i] / 100);
-							const act = i < curM ? Math.round(plan * (0.85 + Math.random() * 0.25)) : null;
-							const p = act ? act / plan * 100 : null;
-							const cls = !p ? '' : p >= 100 ? 'text-success' : p >= 85 ? 'text-warning' : 'text-danger';
-							return `<td class="text-end small"><div class="${cls} fw-bold">${p ? p.toFixed(0) + '%' : '—'}</div><div class="text-inverse text-opacity-50">${act ? D.fmtNum(act) : '—'} / ${D.fmtNum(plan)}</div></td>`;
-						}).join('');
-						const tplan = Math.round(teamPlan * D.DEFAULT_MONTH_PERCENT[i]/100);
-						const tact = i < curM ? Math.round(tplan * (0.9 + Math.random() * 0.2)) : null;
-						const tp = tact ? tact/tplan*100 : null;
-						return `<tr><td><strong>${mn}</strong></td>${row}<td class="text-end">${tp ? '<strong>'+tp.toFixed(0)+'%</strong><div class="small text-inverse text-opacity-50">'+D.fmtNum(tact)+' / '+D.fmtNum(tplan)+'</div>' : '—'}</td></tr>`;
-					}).join('') + '</tbody>';
-			} else {
-				document.getElementById('tbl-title').textContent = 'Theo năm (so sánh các năm)';
-				tbl.innerHTML = `<thead><tr><th>Năm</th>${staData.map(x => `<th class="text-end">${x.s.name}</th>`).join('')}<th class="text-end">Tổng Đội</th></tr></thead><tbody>`
-					+ years.slice().reverse().map(y => {
-						const kpy = company.plans[y];
-						const row = staData.map((x, si) => {
-							const p = Math.round(kpy.total * (1/teams.length) * (0.9 + idx * 0.1) * ((x.s.trees || 400) / totalTrees));
-							const a = y <= D.currentYear ? Math.round(p * (0.85 + ((si + y) % 7) / 30)) : 0;
-							const pc = a ? a/p*100 : 0;
-							const cls = pc >= 100 ? 'text-success' : pc >= 85 ? 'text-warning' : pc ? 'text-danger' : '';
-							return `<td class="text-end small"><div class="${cls} fw-bold">${pc ? pc.toFixed(0)+'%' : '—'}</div><div class="text-inverse text-opacity-50">${a ? D.fmtNum(a) : '—'} / ${D.fmtNum(p)}</div></td>`;
-						}).join('');
-						return `<tr><td><strong>${y}</strong></td>${row}<td></td></tr>`;
-					}).join('') + '</tbody>';
-			}
+			// Bảng theo tháng
+			document.getElementById('tbl-month-year').textContent = 'Theo tháng — năm ' + year;
+			const tblM = document.getElementById('tbl-month');
+			tblM.innerHTML = `<thead><tr><th>Tháng</th>${staData.map(x => `<th class="text-end">${x.s.name}</th>`).join('')}<th class="text-end">Tổng Đội</th></tr></thead><tbody>`
+				+ D.MONTHS_VN.map((mn, i) => {
+					const row = staData.map(x => {
+						const plan = Math.round(x.plan * D.DEFAULT_MONTH_PERCENT[i] / 100);
+						const act = i < curM ? Math.round(plan * (0.85 + Math.random() * 0.25)) : null;
+						const p = act ? act / plan * 100 : null;
+						const cls = !p ? '' : p >= 100 ? 'text-success' : p >= 85 ? 'text-warning' : 'text-danger';
+						return `<td class="text-end small"><div class="${cls} fw-bold">${p ? p.toFixed(0)+'%' : '—'}</div><div class="text-inverse text-opacity-50">${act ? D.fmtNum(act) : '—'} / ${D.fmtNum(plan)}</div></td>`;
+					}).join('');
+					const tplan = Math.round(teamPlan * D.DEFAULT_MONTH_PERCENT[i]/100);
+					const tact = i < curM ? Math.round(tplan * (0.9 + Math.random() * 0.2)) : null;
+					const tp = tact ? tact/tplan*100 : null;
+					return `<tr><td><strong>${mn}</strong></td>${row}<td class="text-end">${tp ? '<strong>'+tp.toFixed(0)+'%</strong><div class="small text-inverse text-opacity-50">'+D.fmtNum(tact)+' / '+D.fmtNum(tplan)+'</div>' : '—'}</td></tr>`;
+				}).join('') + '</tbody>';
+
+			// Bảng theo năm
+			const tblY = document.getElementById('tbl-year');
+			tblY.innerHTML = `<thead><tr><th>Năm</th>${staData.map(x => `<th class="text-end">${x.s.name}</th>`).join('')}<th class="text-end">Tổng Đội</th></tr></thead><tbody>`
+				+ years.slice().reverse().map(y => {
+					const kpy = company.plans[y];
+					const tpY = Math.round(kpy.total * (1/teams.length) * (0.9 + idx * 0.1));
+					const row = staData.map((x, si) => {
+						const p = Math.round(kpy.total * (1/teams.length) * (0.9 + idx * 0.1) * ((x.s.trees || 400) / totalTrees));
+						const a = y <= D.currentYear ? Math.round(p * (0.85 + ((si + y) % 7) / 30)) : 0;
+						const pc = a ? a/p*100 : 0;
+						const cls = pc >= 100 ? 'text-success' : pc >= 85 ? 'text-warning' : pc ? 'text-danger' : '';
+						return `<td class="text-end small"><div class="${cls} fw-bold">${pc ? pc.toFixed(0)+'%' : '—'}</div><div class="text-inverse text-opacity-50">${a ? D.fmtNum(a) : '—'} / ${D.fmtNum(p)}</div></td>`;
+					}).join('');
+					const tpctY = 85 + (y % 7) * 2;
+					const tActY = y <= D.currentYear ? Math.round(tpY * tpctY/100) : 0;
+					const tpcY = tActY ? tActY/tpY*100 : 0;
+					const tClsY = tpcY >= 100 ? 'text-success' : tpcY >= 85 ? 'text-warning' : tpcY ? 'text-danger' : '';
+					return `<tr><td><strong>${y}</strong></td>${row}<td class="text-end"><div class="${tClsY} fw-bold">${tpcY ? tpcY.toFixed(0)+'%' : '—'}</div><div class="small text-inverse text-opacity-50">${tActY ? D.fmtNum(tActY) : '—'} / ${D.fmtNum(tpY)}</div></td></tr>`;
+				}).join('') + '</tbody>';
 		}
+
 		render();
 	})();
 	</script>

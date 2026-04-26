@@ -32,8 +32,9 @@
 				<select class="form-select form-select-sm w-auto" id="sel-year"></select>
 			</div>
 
-			<!-- Hàng chỉ số tổng quan -->
-			<div class="row g-2 mb-3">
+			<!-- Hàng chỉ số tổng quan — Năm -->
+			<div class="small fw-bold text-inverse text-opacity-40 mb-1 ps-1">CHỈ TIÊU NĂM</div>
+			<div class="row g-2 mb-2">
 				<div class="col-lg-3 col-md-6">
 					<div class="ksl-kpi accent-theme">
 						<div class="lbl">Kế hoạch khoán năm (gốc)</div>
@@ -60,6 +61,39 @@
 						<div class="lbl">Phấn đấu được giao</div>
 						<div class="val" id="k-strive">—</div>
 						<div class="sub" id="k-strive-sub">—</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Hàng chỉ số tổng quan — Tháng hiện tại -->
+			<div class="small fw-bold text-inverse text-opacity-40 mb-1 ps-1">CHỈ TIÊU <span id="month-section-label">THÁNG HIỆN TẠI</span></div>
+			<div class="row g-2 mb-3">
+				<div class="col-lg-3 col-md-6">
+					<div class="ksl-kpi accent-theme">
+						<div class="lbl">Kế hoạch tháng (gốc)</div>
+						<div class="val" id="km-base">—</div>
+						<div class="sub" id="km-base-sub">—</div>
+					</div>
+				</div>
+				<div class="col-lg-3 col-md-6">
+					<div class="ksl-kpi accent-info">
+						<div class="lbl">Bổ sung tháng</div>
+						<div class="val" id="km-supp">—</div>
+						<div class="sub" id="km-supp-sub">—</div>
+					</div>
+				</div>
+				<div class="col-lg-3 col-md-6">
+					<div class="ksl-kpi accent-theme">
+						<div class="lbl">Kế hoạch hiệu lực tháng</div>
+						<div class="val" id="km-eff">—</div>
+						<div class="sub" id="km-eff-sub">—</div>
+					</div>
+				</div>
+				<div class="col-lg-3 col-md-6">
+					<div class="ksl-kpi">
+						<div class="lbl">Phấn đấu tháng</div>
+						<div class="val" id="km-strive">—</div>
+						<div class="sub" id="km-strive-sub">—</div>
 					</div>
 				</div>
 			</div>
@@ -166,9 +200,27 @@
 
 			const curM = year === D.currentYear ? D.currentMonth : (year < D.currentYear ? 12 : 0);
 			const pcts = D.DEFAULT_MONTH_PERCENT;
+			const actual = D.mockMonthlyActual(basePlan, pcts);
+
+			// KPI tháng hiện tại
+			const displayMonth = curM > 0 ? curM : 1;
+			const mIdx = displayMonth - 1;
+			document.getElementById('month-section-label').textContent = `THÁNG ${displayMonth}/${year}`;
+			const mPlan = actual[mIdx].plan;
+			const mSupp = Math.round(suppTeam * pcts[mIdx] / 100);
+			const mEff = mPlan + mSupp;
+			const mStrive = strivePlan ? Math.round(strivePlan * pcts[mIdx] / 100) : 0;
+			document.getElementById('km-base').innerHTML = D.fmtNum(mPlan) + '<span class="unit">kg</span>';
+			document.getElementById('km-base-sub').textContent = `${pcts[mIdx]}% kế hoạch năm`;
+			document.getElementById('km-supp').innerHTML = D.fmtNum(mSupp) + '<span class="unit">kg</span>';
+			document.getElementById('km-supp-sub').textContent = mSupp ? `+${(mSupp/mPlan*100).toFixed(1)}% so với kế hoạch tháng gốc` : 'Chưa nhận';
+			document.getElementById('km-eff').innerHTML = D.fmtNum(mEff) + '<span class="unit">kg</span>';
+			document.getElementById('km-eff-sub').textContent = D.fmtTon(mEff);
+			document.getElementById('km-strive').innerHTML = D.fmtNum(mStrive) + '<span class="unit">kg</span>';
+			document.getElementById('km-strive-sub').textContent = mStrive ? `+${(mStrive/mPlan*100).toFixed(1)}% phấn đấu thêm` : '—';
+
 			let html = '<thead><tr><th class="sticky-col" style="min-width:220px;">Tháng</th>';
 			html += `<th class="text-end">% Kế hoạch</th><th class="text-end">Kế hoạch (kg)</th><th class="text-end">Bổ sung (kg)</th><th class="text-end">Hiệu lực</th><th class="text-end">Thực hiện</th><th class="text-end">% đạt</th></tr></thead><tbody>`;
-			const actual = D.mockMonthlyActual(basePlan, pcts);
 			actual.forEach((m, i) => {
 				const cls = (i+1) < curM ? 'month-past' : ((i+1) === curM ? 'month-current' : 'month-future');
 				const suppM = Math.round(suppTeam * pcts[i] / 100);
