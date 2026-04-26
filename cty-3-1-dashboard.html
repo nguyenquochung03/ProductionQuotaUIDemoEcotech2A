@@ -29,95 +29,83 @@
 				</div>
 			</div>
 
-			<!-- Nhóm: Kế hoạch năm -->
-			<div class="small fw-bold text-inverse text-opacity-40 mb-1 ps-1">KẾ HOẠCH NĂM</div>
-			<div class="row g-2 mb-2">
-				<div class="col-lg-4 col-md-4 col-6">
-					<div class="ksl-kpi">
-						<div class="lbl">Kế hoạch năm gốc</div>
-						<div class="val" id="k-base">—</div>
-						<div class="sub" id="k-base-sub">—</div>
+			<!-- Tóm tắt năm + tháng gộp -->
+			<div class="card mb-3">
+				<div class="card-body">
+					<!-- Năm -->
+					<div class="small fw-bold text-inverse text-opacity-40 mb-2">
+						<i class="bi bi-calendar-check me-1 text-theme"></i>KẾ HOẠCH &amp; THỰC HIỆN NĂM
+					</div>
+					<div class="ksl-kpi-strip mb-3">
+						<div class="ks-item">
+							<div class="ks-lbl">Kế hoạch gốc</div>
+							<div class="ks-val" id="k-base">—</div>
+							<div class="ks-sub" id="k-base-sub">—</div>
+						</div>
+						<div class="ks-item accent-theme">
+							<div class="ks-lbl">KH hiệu lực</div>
+							<div class="ks-val" id="k-effective">—</div>
+							<div class="ks-sub" id="k-effective-sub">—</div>
+						</div>
+						<div class="ks-item accent-theme">
+							<div class="ks-lbl">Tổng chỉ tiêu</div>
+							<div class="ks-val" id="k-total-target">—</div>
+							<div class="ks-sub" id="k-total-target-sub">—</div>
+						</div>
+						<div class="ks-item accent-info">
+							<div class="ks-lbl">Luỹ kế thực hiện</div>
+							<div class="ks-val" id="k-actual">—</div>
+							<div class="ks-sub" id="k-actual-sub">—</div>
+						</div>
+						<div class="ks-item accent-warn">
+							<div class="ks-lbl">% đạt KH hiệu lực</div>
+							<div class="ks-val" id="k-pct">—</div>
+							<div class="ks-sub" id="k-pct-sub">—</div>
+						</div>
+					</div>
+					<hr style="border-color:rgba(var(--bs-inverse-rgb),0.08);margin:0 0 16px">
+					<!-- Tháng -->
+					<div class="small fw-bold text-inverse text-opacity-40 mb-2">
+						<i class="bi bi-calendar3 me-1 text-warning"></i><span id="month-label" class="text-warning">THÁNG HIỆN TẠI</span>
+					</div>
+					<div class="ksl-month-spot mb-2">
+						<div class="ms-item primary">
+							<div class="ms-lbl">Chỉ tiêu tháng</div>
+							<div class="ms-val" id="km-plan">—</div>
+							<div class="ms-sub" id="km-plan-sub">—</div>
+						</div>
+						<div class="ms-item strive">
+							<div class="ms-lbl">Có phấn đấu</div>
+							<div class="ms-val" id="km-total">—</div>
+							<div class="ms-sub" id="km-total-sub">—</div>
+						</div>
+						<div class="ms-item" style="background:rgba(var(--bs-info-rgb),0.07);border-color:rgba(var(--bs-info-rgb),0.22)">
+							<div class="ms-lbl" style="color:rgba(var(--bs-info-rgb),0.75)">Thực hiện đến nay</div>
+							<div class="ms-val" style="color:var(--bs-info)" id="km-actual">—</div>
+							<div class="ms-sub" id="km-actual-sub">—</div>
+						</div>
+						<div class="ms-item" style="background:rgba(var(--bs-warning-rgb),0.07);border-color:rgba(var(--bs-warning-rgb),0.22)">
+							<div class="ms-lbl" style="color:rgba(var(--bs-warning-rgb),0.75)">% hoàn thành</div>
+							<div class="ms-val" id="km-pct">—</div>
+							<div class="ms-sub" id="km-pct-sub">—</div>
+						</div>
+					</div>
+					<div class="d-flex flex-wrap gap-4 pt-2 ps-1 border-top" style="border-color:rgba(var(--bs-inverse-rgb),0.07)!important">
+						<div class="d-flex align-items-baseline gap-2">
+							<span class="small text-inverse text-opacity-40">Còn lại:</span>
+							<span class="fw-bold" id="km-remaining">—</span>
+							<span class="small text-inverse text-opacity-40" id="km-remaining-sub">—</span>
+						</div>
+						<div class="d-flex align-items-baseline gap-2">
+							<span class="small text-inverse text-opacity-40">Cần cạo/ngày:</span>
+							<span class="fw-bold text-theme" id="km-daily">—</span>
+							<span class="small text-inverse text-opacity-40" id="km-daily-sub">—</span>
+						</div>
 					</div>
 				</div>
-				<div class="col-lg-4 col-md-4 col-6">
-					<div class="ksl-kpi accent-theme">
-						<div class="lbl">Kế hoạch hiệu lực <span class="text-inverse text-opacity-40 fw-normal">(gốc + bổ sung)</span></div>
-						<div class="val" id="k-effective">—</div>
-						<div class="sub" id="k-effective-sub">—</div>
-					</div>
-				</div>
-				<div class="col-lg-4 col-md-4 col-6">
-					<div class="ksl-kpi accent-theme">
-						<div class="lbl">Tổng chỉ tiêu <span class="text-inverse text-opacity-40 fw-normal">(hiệu lực + phấn đấu)</span></div>
-						<div class="val" id="k-total-target">—</div>
-						<div class="sub" id="k-total-target-sub">—</div>
-					</div>
-				</div>
-			</div>
-
-			<!-- Nhóm: Thực hiện năm -->
-			<div class="small fw-bold text-inverse text-opacity-40 mb-1 ps-1">THỰC HIỆN NĂM</div>
-			<div class="row g-2 mb-2">
-				<div class="col-lg-6 col-md-6 col-6">
-					<div class="ksl-kpi accent-info">
-						<div class="lbl">Luỹ kế thực hiện</div>
-						<div class="val" id="k-actual">—</div>
-						<div class="sub" id="k-actual-sub">—</div>
-					</div>
-				</div>
-				<div class="col-lg-6 col-md-6 col-6">
-					<div class="ksl-kpi accent-warn">
-						<div class="lbl">% đạt so với kế hoạch hiệu lực</div>
-						<div class="val" id="k-pct">—<span class="unit">%</span></div>
-						<div class="sub" id="k-pct-sub">—</div>
-					</div>
-				</div>
-			</div>
-
-			<!-- Nhóm: Tháng hiện tại -->
-			<div class="small fw-bold text-inverse text-opacity-40 mb-1 ps-1"><span id="month-label">THÁNG HIỆN TẠI</span></div>
-			<div class="row g-2 mb-3">
-				<div class="col-lg-4 col-md-4 col-6">
-					<div class="ksl-kpi accent-theme">
-						<div class="lbl">Chỉ tiêu tháng (gốc)</div>
-						<div class="val" id="km-plan">—</div>
-						<div class="sub" id="km-plan-sub">—</div>
-					</div>
-				</div>
-				<div class="col-lg-4 col-md-4 col-6">
-					<div class="ksl-kpi accent-theme">
-						<div class="lbl">Tổng chỉ tiêu (có phấn đấu)</div>
-						<div class="val" id="km-total">—</div>
-						<div class="sub" id="km-total-sub">—</div>
-					</div>
-				</div>
-				<div class="col-lg-4 col-md-4 col-6">
-					<div class="ksl-kpi accent-info">
-						<div class="lbl">Lũy kế đến hôm nay</div>
-						<div class="val" id="km-actual">—</div>
-						<div class="sub" id="km-actual-sub">—</div>
-					</div>
-				</div>
-				<div class="col-lg-4 col-md-4 col-6">
-					<div class="ksl-kpi accent-warn">
-						<div class="lbl">% hoàn thành tháng</div>
-						<div class="val" id="km-pct">—</div>
-						<div class="sub" id="km-pct-sub">—</div>
-					</div>
-				</div>
-				<div class="col-lg-4 col-md-4 col-6">
-					<div class="ksl-kpi">
-						<div class="lbl">Còn lại phải đạt</div>
-						<div class="val" id="km-remaining">—</div>
-						<div class="sub" id="km-remaining-sub">—</div>
-					</div>
-				</div>
-				<div class="col-lg-4 col-md-4 col-6">
-					<div class="ksl-kpi">
-						<div class="lbl">Cần cạo mỗi ngày</div>
-						<div class="val" id="km-daily">—</div>
-						<div class="sub" id="km-daily-sub">—</div>
-					</div>
+				<div class="card-arrow">
+					<div class="card-arrow-top-left"></div><div class="card-arrow-top-right"></div>
+					<div class="card-arrow-bottom-left"></div><div class="card-arrow-bottom-right"></div>
 				</div>
 			</div>
 

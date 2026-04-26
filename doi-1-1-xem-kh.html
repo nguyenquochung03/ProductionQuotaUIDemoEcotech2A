@@ -32,69 +32,69 @@
 				<select class="form-select form-select-sm w-auto" id="sel-year"></select>
 			</div>
 
-			<!-- Hàng chỉ số tổng quan — Năm -->
-			<div class="small fw-bold text-inverse text-opacity-40 mb-1 ps-1">CHỈ TIÊU NĂM</div>
-			<div class="row g-2 mb-2">
-				<div class="col-lg-3 col-md-6">
-					<div class="ksl-kpi accent-theme">
-						<div class="lbl">Kế hoạch khoán năm (gốc)</div>
-						<div class="val" id="k-base">—</div>
-						<div class="sub" id="k-base-sub">—</div>
+			<!-- Tóm tắt chỉ tiêu — Năm + Tháng gộp -->
+			<div class="card mb-3">
+				<div class="card-body p-3">
+					<div class="row g-3">
+						<!-- Cột trái: Chỉ tiêu năm dạng danh sách compact -->
+						<div class="col-lg-5">
+							<div class="small fw-bold text-inverse text-opacity-40 mb-2">
+								<i class="bi bi-calendar-check me-1 text-theme"></i>CHỈ TIÊU NĂM
+							</div>
+							<div class="ksl-plan-row">
+								<span class="pr-lbl">Kế hoạch khoán năm (gốc)</span>
+								<span class="pr-val" id="k-base">—</span>
+								<span class="pr-sub" id="k-base-sub">—</span>
+							</div>
+							<div class="ksl-plan-row">
+								<span class="pr-lbl" style="color:var(--bs-info)">+ Bổ sung đã nhận</span>
+								<span class="pr-val" style="color:var(--bs-info)" id="k-supp">—</span>
+								<span class="pr-sub" id="k-supp-sub">—</span>
+							</div>
+							<div class="ksl-plan-row" style="border-top:1px solid rgba(var(--bs-theme-rgb),0.18)">
+								<span class="pr-lbl fw-semibold" style="color:var(--bs-theme)">Kế hoạch hiệu lực</span>
+								<span class="pr-val" style="color:var(--bs-theme)" id="k-eff">—</span>
+								<span class="pr-sub" id="k-eff-sub">—</span>
+							</div>
+							<div class="ksl-plan-row">
+								<span class="pr-lbl" style="color:var(--bs-success)">+ Phấn đấu được giao</span>
+								<span class="pr-val" style="color:var(--bs-success)" id="k-strive">—</span>
+								<span class="pr-sub" id="k-strive-sub">—</span>
+							</div>
+						</div>
+						<!-- Divider dọc -->
+						<div class="col-lg-1 d-none d-lg-flex justify-content-center">
+							<div style="width:1px;background:rgba(var(--bs-inverse-rgb),0.1);height:100%;min-height:120px"></div>
+						</div>
+						<!-- Cột phải: Spotlight tháng hiện tại -->
+						<div class="col-lg-6">
+							<div class="small fw-bold text-inverse text-opacity-40 mb-2">
+								<i class="bi bi-calendar3 me-1 text-warning"></i>
+								CHỈ TIÊU <span id="month-section-label" class="text-warning">THÁNG HIỆN TẠI</span>
+							</div>
+							<div class="ksl-month-spot">
+								<div class="ms-item primary">
+									<div class="ms-lbl">Chỉ tiêu tháng</div>
+									<div class="ms-val" id="km-base">—</div>
+									<div class="ms-sub" id="km-base-sub">—</div>
+								</div>
+								<div class="ms-item strive">
+									<div class="ms-lbl">Có phấn đấu</div>
+									<div class="ms-val" id="km-total">—</div>
+									<div class="ms-sub" id="km-eff-sub">—</div>
+								</div>
+							</div>
+							<span id="km-strive" style="display:none"></span>
+							<span id="km-strive-sub" style="display:none"></span>
+							<span id="km-supp" style="display:none"></span>
+							<span id="km-supp-sub" style="display:none"></span>
+							<span id="km-eff" style="display:none"></span>
+						</div>
 					</div>
 				</div>
-				<div class="col-lg-3 col-md-6">
-					<div class="ksl-kpi accent-info">
-						<div class="lbl">Bổ sung đã nhận</div>
-						<div class="val" id="k-supp">—</div>
-						<div class="sub" id="k-supp-sub">—</div>
-					</div>
-				</div>
-				<div class="col-lg-3 col-md-6">
-					<div class="ksl-kpi accent-theme">
-						<div class="lbl">Kế hoạch hiệu lực</div>
-						<div class="val" id="k-eff">—</div>
-						<div class="sub" id="k-eff-sub">—</div>
-					</div>
-				</div>
-				<div class="col-lg-3 col-md-6">
-					<div class="ksl-kpi">
-						<div class="lbl">Phấn đấu được giao</div>
-						<div class="val" id="k-strive">—</div>
-						<div class="sub" id="k-strive-sub">—</div>
-					</div>
-				</div>
-			</div>
-
-			<!-- Hàng chỉ số tổng quan — Tháng hiện tại -->
-			<div class="small fw-bold text-inverse text-opacity-40 mb-1 ps-1">CHỈ TIÊU <span id="month-section-label">THÁNG HIỆN TẠI</span></div>
-			<div class="row g-2 mb-3">
-				<div class="col-lg-3 col-md-6">
-					<div class="ksl-kpi accent-theme">
-						<div class="lbl">Kế hoạch tháng (gốc)</div>
-						<div class="val" id="km-base">—</div>
-						<div class="sub" id="km-base-sub">—</div>
-					</div>
-				</div>
-				<div class="col-lg-3 col-md-6">
-					<div class="ksl-kpi accent-info">
-						<div class="lbl">Bổ sung tháng</div>
-						<div class="val" id="km-supp">—</div>
-						<div class="sub" id="km-supp-sub">—</div>
-					</div>
-				</div>
-				<div class="col-lg-3 col-md-6">
-					<div class="ksl-kpi accent-theme">
-						<div class="lbl">Kế hoạch hiệu lực tháng</div>
-						<div class="val" id="km-eff">—</div>
-						<div class="sub" id="km-eff-sub">—</div>
-					</div>
-				</div>
-				<div class="col-lg-3 col-md-6">
-					<div class="ksl-kpi">
-						<div class="lbl">Phấn đấu tháng</div>
-						<div class="val" id="km-strive">—</div>
-						<div class="sub" id="km-strive-sub">—</div>
-					</div>
+				<div class="card-arrow">
+					<div class="card-arrow-top-left"></div><div class="card-arrow-top-right"></div>
+					<div class="card-arrow-bottom-left"></div><div class="card-arrow-bottom-right"></div>
 				</div>
 			</div>
 
@@ -215,7 +215,8 @@
 			document.getElementById('km-supp').innerHTML = D.fmtNum(mSupp) + '<span class="unit">kg</span>';
 			document.getElementById('km-supp-sub').textContent = mSupp ? `+${(mSupp/mPlan*100).toFixed(1)}% so với kế hoạch tháng gốc` : 'Chưa nhận';
 			document.getElementById('km-eff').innerHTML = D.fmtNum(mEff) + '<span class="unit">kg</span>';
-			document.getElementById('km-eff-sub').textContent = D.fmtTon(mEff);
+			document.getElementById('km-total').innerHTML = D.fmtNum(mEff + mStrive) + '<span class="unit">kg</span>';
+			document.getElementById('km-eff-sub').textContent = D.fmtTon(mEff + mStrive);
 			document.getElementById('km-strive').innerHTML = D.fmtNum(mStrive) + '<span class="unit">kg</span>';
 			document.getElementById('km-strive-sub').textContent = mStrive ? `+${(mStrive/mPlan*100).toFixed(1)}% phấn đấu thêm` : '—';
 
